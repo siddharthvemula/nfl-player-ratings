@@ -257,3 +257,19 @@ opponent defense, pooled walk-forward MAE 0.2260** (carry-over 0.2287). In order
 **Caveat to fix (data):** play-by-play starts in 2016, so every 2016 QB looks like he had no last season.
 That mislabels 2016 veterans as "no history" in the training data of every fold, which blurs C1's
 backup/rookie signal. Proposed fix: load 2015 as history only (never a target row).
+
+**Data-quality fix: 2015 loaded as history only (decided 2026-10-20).**
+Problem: play-by-play started in 2016, so every 2016 QB looked like he had no previous season. In every
+walk-forward fold, 2016 veterans were mislabeled as "no history" (like rookies and backups), which blurs
+the signal C1 found. Fix: `load_pbp()` now starts at 2015 (`FIRST_SEASON`), and 2015 is used only for
+features (2016's "last season"). It is never a target row: `build_targets()` drops seasons before
+`FIRST_TARGET_SEASON` (2016), and `walk_forward()` filters target rows to 2016-2024 as a second guard,
+so 2015 can't enter any fold's training rows, league average, or scores. Tested in
+tests/test_walk_forward.py. Notebooks 01-02 (Phases 2-3) are left as the historical record on 2016+ data.
+Re-run of the v2 table with 2015 history (folds still 2019-2024): conclusions unchanged.
+- Carry-over 0.2287 (fold K: 300 for 2019-2022, 400 for 2023-2024).
+- C1 kept: 0.2275 (was 0.2276), win 96.8%, 5/6 seasons. QBs with little or no last season now come in
+  0.078 below carry-over (was 0.076).
+- C2, C3 dropped vs C1 (win 1.3% each, 0/6 seasons).
+- C4 kept: **C1 + opponent defense = 0.2259, the current best** (win 99.7% vs C1, 4/6 seasons; defense
+  weight 0.43-0.60 across folds).

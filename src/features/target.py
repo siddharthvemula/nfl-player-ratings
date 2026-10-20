@@ -27,6 +27,8 @@ LEAKY_COLUMNS = {TARGET_COL, WEIGHT_COL, "dropbacks", "epa_sum", "epa_per_db"}
 # Time-based splits by the target game's season. Later seasons are "live":
 # the site rates them, but they're never used to score the model.
 SPLITS = {"train": range(2016, 2024), "val": range(2024, 2025), "test": range(2025, 2026)}
+# Seasons before this are history only (features), never predicted or scored.
+FIRST_TARGET_SEASON = min(SPLITS["train"])
 
 
 def split_for_season(season: int) -> str:
@@ -42,8 +44,8 @@ def split_for_season(season: int) -> str:
 def build_targets(games: pl.DataFrame, min_dropbacks: int = MIN_TARGET_DROPBACKS) -> pl.DataFrame:
     """Turn the qb_games() table into one target row per QB-game with min_dropbacks+."""
     return (
-        # Step 1: only games big enough to be a fair test of the QB.
-        games.filter(pl.col("dropbacks") >= min_dropbacks)
+        # Step 1: only games big enough to be a fair test of the QB, and never a history-only season.
+        games.filter(pl.col("dropbacks") >= min_dropbacks, pl.col("season") >= FIRST_TARGET_SEASON)
         # Step 2: name the answer and its weight. Same-game stats are dropped so
         # they can't accidentally ride along into a feature table.
         .select(

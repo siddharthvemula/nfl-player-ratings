@@ -30,3 +30,14 @@ at the time. Keep = win ≥ 80% AND better in ≥ 4 of 6 seasons. Reproduced in 
 | 2026-10-20 | C2: + shrunk features (K per fold) | C1 | 0.2286 | 0.2276 | 0.4 | 0/6 | drop |
 | 2026-10-20 | C3: + handoff pieces (K per fold) | C1 | 0.2286 | 0.2276 | 0.4 | 1/6 | drop |
 | 2026-10-20 | C4: C1 + opponent defense (def_shrunk, K per fold: 100-300; weight 0.41-0.61) | C1 | **0.2260** | 0.2276 | 99.8 | 4/6 | **keep** (new best). Per-season gain: +.0038 +.0044 +.0005 −.0001 +.0012 −.0002 |
+
+### Protocol v2 re-run with 2015 loaded as history only (supersedes the table above)
+
+| date | change | vs | pooled MAE | vs MAE | win % | seasons won | per-season gain 2019..2024 | keep/drop |
+|------|--------|----|-----------|--------|-------|-------------|----------------------------|-----------|
+| 2026-10-20 | Carry-over (fold K: 300, 300, 300, 300, 400, 400) | — | 0.2287 | — | — | — | — | starting best |
+| 2026-10-20 | Control (not a candidate): constant shift only | carry-over | 0.2286 | 0.2287 | 68.0 | 4/6 | +.0002 −.0021 +.0012 +.0021 +.0008 −.0014 | reference only |
+| 2026-10-20 | C1: + raw features | carry-over | 0.2275 | 0.2287 | 96.8 | 5/6 | +.0017 −.0021 +.0024 +.0029 +.0021 +.0006 | **keep** |
+| 2026-10-20 | C2: + shrunk features | C1 | 0.2287 | 0.2275 | 1.3 | 0/6 | −.0017 −.0001 −.0017 −.0003 −.0015 −.0019 | drop |
+| 2026-10-20 | C3: + handoff pieces | C1 | 0.2286 | 0.2275 | 1.3 | 0/6 | −.0015 −.0004 −.0020 −.0000 −.0013 −.0016 | drop |
+| 2026-10-20 | C4: C1 + opponent defense | C1 | **0.2259** | 0.2275 | 99.7 | 4/6 | +.0042 +.0047 +.0006 −.0001 +.0008 −.0005 | **keep** (current best) |

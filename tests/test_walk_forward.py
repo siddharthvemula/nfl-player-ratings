@@ -4,9 +4,9 @@ from tests.test_evaluate import _game
 
 
 def _history():
-    # Two QBs, every season 2016-2025, three games each; numbers vary so fits aren't degenerate.
+    # Two QBs, every season 2015-2025 (2015 = history only), three games each; numbers vary so fits aren't degenerate.
     rows = []
-    for season in range(2016, 2026):
+    for season in range(2015, 2026):
         for week in (1, 2, 3):
             rows.append(_game("a", week, 30 + week, 0.1 * week + 0.01 * (season - 2016), season=season))
             rows.append(_game("b", week, 20 + 2 * week, -0.3 + 0.05 * week * (season % 3), season=season))
@@ -44,3 +44,22 @@ def test_residual_keeps_carry_over_weight_at_one():
     df = df.with_columns((pl.col("carry_over") + 0.5 * pl.col("f")).alias("target"))
     pred = predict_residual(fit_residual(df, ["f"]), df, ["f"])
     assert (pred["prediction"] - pred["target"]).abs().max() < 1e-9
+
+
+def test_2015_is_history_only():
+    from src.features.history import base_features
+    from src.features.target import build_targets
+    from src.models.walk_forward import Experiment, walk_forward
+
+    games = _history()
+    targets = build_targets(games)
+    assert targets["season"].min() == 2016  # 2015 never becomes a target row
+
+    # ...but it does feed 2016's "last season" feature.
+    f = base_features(games, targets, league_avg=0.05)
+    assert (f.filter(pl.col("season") == 2016)["last_dropbacks"] > 0).all()
+
+    # And walk-forward still scores only 2019-2024.
+    exp = Experiment("raw", ["last_avg"], lambda g, t, la, k: base_features(g, t, la))
+    pooled, _ = walk_forward(games, targets, exp)
+    assert pooled["season"].min() == 2019

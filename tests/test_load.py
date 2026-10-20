@@ -17,9 +17,9 @@ def test_load_pbp_downloads_each_season_only_once(tmp_path, monkeypatch):
     first = load.load_pbp()
     second = load.load_pbp()
 
-    assert calls == [2016, 2017]
+    assert calls == [2015, 2016, 2017]
     assert first.equals(second)
-    assert (tmp_path / "pbp_2016.parquet").exists()
+    assert (tmp_path / "pbp_2015.parquet").exists()
 
 
 def test_refresh_current_redownloads_only_current_season(tmp_path, monkeypatch):
@@ -36,4 +36,4 @@ def test_refresh_current_redownloads_only_current_season(tmp_path, monkeypatch):
     load.load_pbp()
     load.load_pbp(refresh_current=True)
 
-    assert calls == [2016, 2017, 2017]
+    assert calls == [2015, 2016, 2017, 2017]

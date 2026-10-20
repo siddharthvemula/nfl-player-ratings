@@ -18,9 +18,11 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
 - Concept 4 done (v1): opponent defense (`defense_features()`), dropped on 2024 alone.
 - **Protocol v2** (DECISIONS.md): walk-forward folds 2019-2024, residual on carry-over, keep = pooled win >= 80% AND >= 4/6 seasons.
   `src/models/walk_forward.py`. Re-run of C1-C4: C1 kept, C2/C3 dropped, C4 kept.
-  **Current best: carry-over + raw features + opponent defense, pooled MAE 0.2260** (carry-over 0.2287).
-- Open: 2016 has no prior season in the data (proposed: load 2015 as history only).
-**Next (waiting on Sid to review the v2 table): Concept 5, CPOE**, on top of the current best. Then sack rate, home/away.
+- Data fix: 2015 loaded as history only (features, never a target row). v2 table re-run, same conclusions.
+  **Current best: carry-over + raw features + opponent defense, pooled walk-forward MAE 0.2259** (carry-over 0.2287).
+  Reproduce: last section of notebooks/03_features_ridge.ipynb.
+**Next: Concept 5, CPOE** (Sid starts it in a new chat), as a residual feature on top of the current best,
+shrunk by attempts, weeks < N only, judged by the v2 keep rule. Then sack rate, home/away.
 Ridge once there are enough features for it to matter.
 
 Phase 2 summary below.

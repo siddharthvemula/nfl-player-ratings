@@ -15,7 +15,7 @@ from typing import Callable
 import polars as pl
 from sklearn.linear_model import LinearRegression
 
-from src.features.target import TARGET_COL, WEIGHT_COL, check_no_leakage
+from src.features.target import FIRST_TARGET_SEASON, TARGET_COL, WEIGHT_COL, check_no_leakage
 from src.models.baselines import carry_over, league_average
 from src.models.evaluate import bootstrap_compare, mae
 
@@ -94,9 +94,13 @@ def run_fold(games: pl.DataFrame, targets: pl.DataFrame, season: int, exp: Exper
 
 
 def walk_forward(games: pl.DataFrame, targets: pl.DataFrame, exp: Experiment) -> tuple[pl.DataFrame, list[dict]]:
-    """Run every fold and pool the scored rows. 2025 is dropped before anything else."""
+    """Run every fold and pool the scored rows. 2025 is dropped before anything else.
+
+    History-only seasons (2015) stay in games for features but never appear as target rows,
+    so they can't enter any fold's training rows or its league average.
+    """
     games = games.filter(pl.col("season") <= LAST_SCORED_SEASON)
-    targets = targets.filter(pl.col("season") <= LAST_SCORED_SEASON)
+    targets = targets.filter(pl.col("season").is_between(FIRST_TARGET_SEASON, LAST_SCORED_SEASON))
     pooled, picks = [], []
     for season in FOLD_SEASONS:
         scored, picked = run_fold(games, targets, season, exp)

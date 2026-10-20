@@ -13,7 +13,9 @@ from pathlib import Path
 import nflreadpy
 import polars as pl
 
-FIRST_SEASON = 2016
+# 2015 is history only: it feeds features (e.g. 2016's "last season") but is never a target row
+# (see FIRST_TARGET_SEASON in src/features/target.py and DECISIONS.md, "2015 as history only").
+FIRST_SEASON = 2015
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 
@@ -23,7 +25,7 @@ def _cache_path(season: int) -> Path:
 
 
 def load_pbp(seasons: list[int] | None = None, refresh_current: bool = False) -> pl.DataFrame:
-    """Return play-by-play data for the given seasons (default: 2016 through current).
+    """Return play-by-play data for the given seasons (default: 2015 through current).
 
     Seasons already cached in data/raw/ are read from disk; missing ones are
     downloaded and saved. If refresh_current is True, the current season is
