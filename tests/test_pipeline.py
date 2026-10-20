@@ -75,6 +75,21 @@ def test_rankings_put_bye_week_qbs_with_everyone():
     assert ranks == {"b": 1, "a": 2, "c": 1}  # b (week 4, after a bye) and a (week 3) share one ranking
 
 
+def test_previous_rank_skips_bye_weeks_and_resets_each_season():
+    from src.pipeline.build_site_data import add_display_fields
+
+    def rec(qb, season, week, rank, upcoming=False):
+        return {"season": season, "week": week, "upcoming": upcoming, "passer_id": qb, "passer": qb, "rank": rank,
+                "features": {"std_avg": 0.1, "std_dropbacks": 30.0 * (week - 1)}}
+
+    recs = add_display_fields([rec("a", 2020, 1, 1), rec("b", 2020, 1, 2), rec("a", 2020, 2, 1),  # b on bye in week 2
+                               rec("b", 2020, 3, 1, True), rec("a", 2020, 3, 2, True), rec("a", 2021, 1, 1)],
+                              {"a": {"name": "Full A", "headshot": "x.png"}})
+    assert [r["prev_rank"] for r in recs] == [None, None, 1, 2, 1, None]  # b's previous = his week-1 rank
+    assert recs[0]["name"] == "Full A" and recs[1]["name"] == "b"  # unknown id falls back to the short name
+    assert recs[0]["raw_epa"] is None and recs[2]["raw_epa"] == 0.1  # no dropbacks yet = no raw EPA
+
+
 def test_experiments_parser_covers_every_table():
     from src.pipeline.experiments import parse_experiments
 

@@ -6,10 +6,11 @@ from fastapi.testclient import TestClient
 
 def _rating(pid, season, week, rank, upcoming=False, rating=0.1):
     return {"season": season, "week": week, "season_type": "REG", "game_id": f"{season}_{week}_{pid}", "passer_id": pid,
-            "passer": pid.upper(), "team": "KC", "opponent": None if upcoming else "BAL", "upcoming": upcoming, "rank": rank,
+            "passer": pid.upper(), "name": f"Full {pid}", "headshot": None, "team": "KC", "opponent": None if upcoming else "BAL", "upcoming": upcoming, "rank": rank,
             "rating": rating, "matchup_rating": rating, "actual": None if upcoming else 0.2, "dropbacks": None if upcoming else 30,
             "evidence": 500, "confidence": "Med", "carry_over": 0.1, "avg_adjustment": -0.02,
-            "contributions": {"def_shrunk": 0.02}, "features": {"def_shrunk": 0.05}}
+            "contributions": {"def_shrunk": 0.02}, "features": {"def_shrunk": 0.05},
+            "raw_epa": None, "season_dropbacks": 0, "prev_rank": None}
 
 
 @pytest.fixture
@@ -21,6 +22,8 @@ def client(tmp_path, monkeypatch):
     (tmp_path / "ratings.json").write_text(json.dumps(ratings))
     (tmp_path / "meta.json").write_text(json.dumps(meta))
     (tmp_path / "experiments.json").write_text(json.dumps([{"title": "t", "rows": []}]))
+    (tmp_path / "test_2025.json").write_text(json.dumps([{"passer_id": "a", "name": "Full a", "team": "KC", "week": 1,
+                                                          "opponent": "BAL", "predicted": 0.1, "actual": 0.3, "dropbacks": 30}]))
     monkeypatch.setattr(api, "DATA_DIR", tmp_path)
     api._data.cache_clear()
     yield TestClient(api.app)
@@ -43,7 +46,7 @@ def test_players_and_player_history(client):
     ps = client.get("/api/players").json()
     assert {p["passer_id"]: p["games"] for p in ps} == {"a": 1, "b": 1}  # upcoming games aren't counted as played
     p = client.get("/api/players/b").json()
-    assert [g["week"] for g in p["games"]] == [6, 8]
+    assert [g["week"] for g in p["games"]] == [6, 8] and p["name"] == "Full b"
     assert client.get("/api/players/nobody").status_code == 404
 
 
@@ -51,6 +54,7 @@ def test_meta_and_experiments(client):
     assert client.get("/api/meta").json()["current"]["week"] == 7
     assert client.get("/api/experiments").json()[0]["title"] == "t"
     assert client.get("/api/health").json()["ok"]
+    assert client.get("/api/test-2025").json()[0]["actual"] == 0.3
 
 
 def test_real_site_data_fits_the_response_shapes():
@@ -64,4 +68,5 @@ def test_real_site_data_fits_the_response_shapes():
     pid = r.json()["rows"][0]["passer_id"]
     assert c.get(f"/api/players/{pid}").status_code == 200
     assert c.get("/api/experiments").status_code == 200
+    assert len(c.get("/api/test-2025").json()) == 624
     api._data.cache_clear()

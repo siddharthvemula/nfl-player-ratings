@@ -170,6 +170,65 @@ def to_records(rows: pl.DataFrame) -> list[dict]:
     return out.to_dicts()
 
 
+def add_display_fields(records: list[dict], people: dict[str, dict]) -> list[dict]:
+    """Extras the website shows next to each rating. None of them feed the model or change a rating.
+
+    name / headshot: full name and photo URL from nflverse's players table (the play-by-play only has "J.Herbert").
+    raw_epa:         his raw EPA/dropback this season before this game (std_avg), None before his first dropback
+                     (std_avg is then just the league-average placeholder).
+    season_dropbacks: the dropbacks behind raw_epa.
+    prev_rank:       his most recent earlier rank this season (None in week 1 or before his first ranked game).
+    """
+    # Each season's rankings in order: played weeks first, then the upcoming list (one ranking for all its weeks).
+    group = lambda r: (r["season"], 10_000 if r["upcoming"] else r["week"])
+    rank_of = {}
+    for r in records:
+        rank_of.setdefault(group(r), {})[r["passer_id"]] = r["rank"]
+    # A QB on a bye isn't in that week's ranking, so "previous" = his most recent rank earlier in the season.
+    previous, latest = {}, {}  # latest: season -> {passer_id: most recent rank so far}
+    for key in sorted(rank_of):
+        so_far = latest.setdefault(key[0], {})
+        previous[key] = dict(so_far)
+        so_far.update(rank_of[key])
+
+    for r in records:
+        person = people.get(r["passer_id"], {})
+        prev = previous[group(r)]
+        season_dropbacks = int(r["features"]["std_dropbacks"])
+        r.update(
+            name=person.get("name") or r["passer"],
+            headshot=person.get("headshot"),
+            raw_epa=r["features"]["std_avg"] if season_dropbacks > 0 else None,
+            season_dropbacks=season_dropbacks,
+            prev_rank=prev.get(r["passer_id"]),
+        )
+    return records
+
+
+def team_info() -> dict[str, dict]:
+    """Team name and colors from nflverse (keyed by the same abbreviations as the play-by-play)."""
+    teams = nflreadpy.load_teams()
+    return {t["team_abbr"]: {"name": t["team_name"], "color": t["team_color"], "color2": t["team_color2"]}
+            for t in teams.iter_rows(named=True)}
+
+
+def people_info(passer_ids: list[str]) -> dict[str, dict]:
+    """Full name and headshot URL per passer_id (= gsis_id in nflverse's players table)."""
+    players = nflreadpy.load_players().filter(pl.col("gsis_id").is_in(passer_ids))
+    return {p["gsis_id"]: {"name": p["display_name"], "headshot": p["headshot"]} for p in players.iter_rows(named=True)}
+
+
+def test_2025_games(records: list[dict]) -> list[dict]:
+    """Every 2025 game's forecast (vs the actual opponent) and result: the one-time test, game by game.
+
+    Same out-of-sample predictions as the frozen test (model fitted on 2016-2024); the weighted MAE of these rows
+    reproduces TEST_2025["weighted_mae"]["final"].
+    """
+    return [{"passer_id": r["passer_id"], "name": r["name"], "team": r["team"], "week": r["week"], "opponent": r["opponent"],
+             "predicted": r["matchup_rating"], "actual": r["actual"], "dropbacks": r["dropbacks"]}
+            for r in records if r["season"] == 2025 and not r["upcoming"]]
+
+
 def tier_errors(rows: pl.DataFrame) -> list[dict]:
     """Each confidence tier's real (out-of-sample) dropback-weighted MAE on walk-forward 2019-2024."""
     scored = rows.filter(pl.col("season").is_in(list(TIER_SEASONS)), pl.col(TARGET_COL).is_not_null())
@@ -213,6 +272,7 @@ def build(refresh: bool = False, out_dir: Path = SITE_DIR) -> dict:
 
     # Step 4: write the JSON files the API serves.
     records = to_records(rated)
+    records = add_display_fields(records, people_info(sorted({r["passer_id"] for r in records})))
     # The current rankings = the upcoming games, labeled by the earliest upcoming week.
     upcoming = rated.filter(pl.col(TARGET_COL).is_null())
     current = {"season": live_season, "week": int(upcoming["week"].min()), "upcoming": True} if upcoming.height else {
@@ -227,18 +287,20 @@ def build(refresh: bool = False, out_dir: Path = SITE_DIR) -> dict:
         "models": models,
         "confidence_tiers": tier_errors(rated),
         "test_2025": TEST_2025,
+        "teams": team_info(),
     }
+    test_games = test_2025_games(records)
     experiments = parse_experiments((PROJECT_ROOT / "experiments.md").read_text())
 
     # Nothing new (e.g. the off-season): keep the old timestamp so the files don't change and nothing gets committed.
     out_dir.mkdir(parents=True, exist_ok=True)
     dump = lambda payload: json.dumps(payload, separators=(",", ":"), default=str)
     old_meta = out_dir / "meta.json"
-    if old_meta.exists() and all((out_dir / n).exists() and (out_dir / n).read_text() == dump(x) for n, x in [("ratings.json", records), ("experiments.json", experiments)]):
+    if old_meta.exists() and all((out_dir / n).exists() and (out_dir / n).read_text() == dump(x) for n, x in [("ratings.json", records), ("experiments.json", experiments), ("test_2025.json", test_games)]):
         previous = json.loads(old_meta.read_text())
         if dump({**previous, "updated_at": None}) == dump({**meta, "updated_at": None}):
             meta["updated_at"] = previous["updated_at"]
-    for name, payload in [("meta.json", meta), ("ratings.json", records), ("experiments.json", experiments)]:
+    for name, payload in [("meta.json", meta), ("ratings.json", records), ("experiments.json", experiments), ("test_2025.json", test_games)]:
         (out_dir / name).write_text(dump(payload))
     print(f"Wrote {len(records):,} ratings ({placeholders.height} upcoming, {current['season']} week {current['week']}) to {out_dir}")
     return meta

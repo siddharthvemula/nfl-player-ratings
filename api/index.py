@@ -29,7 +29,9 @@ class Rating(BaseModel):
     season_type: str
     game_id: str
     passer_id: str
-    passer: str
+    passer: str  # short name as in the play-by-play ("J.Herbert")
+    name: str  # full name ("Justin Herbert"), from nflverse's players table
+    headshot: str | None
     team: str
     opponent: str | None
     upcoming: bool
@@ -44,6 +46,22 @@ class Rating(BaseModel):
     avg_adjustment: float
     contributions: dict[str, float]  # matchup_rating = carry_over + avg_adjustment + sum(contributions)
     features: dict[str, float]
+    raw_epa: float | None  # his raw EPA/dropback this season before this game (None before his first dropback)
+    season_dropbacks: int  # dropbacks behind raw_epa
+    prev_rank: int | None  # his most recent earlier rank this season
+
+
+class TestGame(BaseModel):
+    """One 2025 game from the one-time test: the forecast (vs the actual opponent) and what happened."""
+
+    passer_id: str
+    name: str
+    team: str
+    week: int
+    opponent: str | None
+    predicted: float
+    actual: float
+    dropbacks: int
 
 
 class Rankings(BaseModel):
@@ -56,6 +74,8 @@ class Rankings(BaseModel):
 class PlayerSummary(BaseModel):
     passer_id: str
     passer: str
+    name: str
+    headshot: str | None
     team: str
     first_season: int
     last_season: int
@@ -65,6 +85,8 @@ class PlayerSummary(BaseModel):
 class Player(BaseModel):
     passer_id: str
     passer: str
+    name: str
+    headshot: str | None
     team: str
     games: list[Rating]
 
@@ -78,7 +100,8 @@ def _data() -> dict:
     by_player: dict[str, list[dict]] = {}
     for r in ratings:
         by_player.setdefault(r["passer_id"], []).append(r)
-    return {"meta": load("meta.json"), "experiments": load("experiments.json"), "ratings": ratings, "by_player": by_player}
+    return {"meta": load("meta.json"), "experiments": load("experiments.json"), "test_2025": load("test_2025.json"),
+            "ratings": ratings, "by_player": by_player}
 
 
 # ---- Endpoints ---------------------------------------------------------------------------------------------------
@@ -90,7 +113,7 @@ def health() -> dict:
 
 @app.get("/api/meta")
 def meta() -> dict:
-    """Current week, played weeks, each season's fitted model, confidence-tier errors, the 2025 test."""
+    """Current week, played weeks, each season's fitted model, confidence-tier errors, the 2025 test, team colors."""
     return _data()["meta"]
 
 
@@ -118,9 +141,10 @@ def players() -> list[PlayerSummary]:
     out = []
     for pid, games in _data()["by_player"].items():
         last = games[-1]
-        out.append(PlayerSummary(passer_id=pid, passer=last["passer"], team=last["team"], first_season=games[0]["season"],
+        out.append(PlayerSummary(passer_id=pid, passer=last["passer"], name=last["name"], headshot=last["headshot"],
+                                 team=last["team"], first_season=games[0]["season"],
                                  last_season=last["season"], games=sum(not g["upcoming"] for g in games)))
-    return sorted(out, key=lambda p: (-p.last_season, p.passer))
+    return sorted(out, key=lambda p: (-p.last_season, p.name))
 
 
 @app.get("/api/players/{passer_id}", response_model=Player)
@@ -129,10 +153,18 @@ def player(passer_id: str) -> Player:
     games = _data()["by_player"].get(passer_id)
     if not games:
         raise HTTPException(404, f"No QB with id {passer_id}")
-    return Player(passer_id=passer_id, passer=games[-1]["passer"], team=games[-1]["team"], games=games)
+    last = games[-1]
+    return Player(passer_id=passer_id, passer=last["passer"], name=last["name"], headshot=last["headshot"], team=last["team"],
+                  games=games)
 
 
 @app.get("/api/experiments")
 def experiments() -> list[dict]:
     """Every table in experiments.md: {title, notes, columns, rows: [{cells, status: keep|drop|reference}]}."""
     return _data()["experiments"]
+
+
+@app.get("/api/test-2025", response_model=list[TestGame])
+def test_2025() -> list[TestGame]:
+    """Every game of the one-time 2025 test (624 games): what the model forecast and what happened."""
+    return _data()["test_2025"]
