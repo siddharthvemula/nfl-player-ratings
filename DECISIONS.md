@@ -427,3 +427,10 @@ from experiments.md, which stays the single source of truth). The plan listed on
 - **Confidence = dropbacks of evidence** (last season + this season so far): Low < 250, Med 250-600, High ≥ 600. Real
   error per tier on walk-forward 2019-2024: Low 0.248 (897 games), Med 0.227 (827), High 0.217 (1,958). So the
   labels track real accuracy. 2025 isn't used for this; it's spent.
+
+**FastAPI backend (`api/index.py`): reads site_data/ once, typed responses, fastapi as its only dependency.**
+Endpoints: `/api/meta`, `/api/rankings?season=&week=` (default = the current upcoming week), `/api/players`,
+`/api/players/{id}`, `/api/experiments`, `/api/health`; interactive docs at `/api/docs`. `requirements.txt` now holds
+only what the server needs (what Vercel installs); the pipeline, notebooks and tests use `requirements-ml.txt`
+(which includes it). Shipping polars/LightGBM/SHAP/Jupyter to a function that only reads JSON would be slow and
+could exceed Vercel's size limit.

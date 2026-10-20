@@ -1,10 +1,1 @@
-nflreadpy
-polars
-pandas
-pyarrow
-scikit-learn
-lightgbm
-shap
-jupyter
-matplotlib
-pytest
+fastapi==0.156.1

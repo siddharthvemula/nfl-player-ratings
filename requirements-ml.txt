@@ -1,0 +1,14 @@
+# Everything for the data pipeline, notebooks and tests. The API server only needs requirements.txt.
+-r requirements.txt
+nflreadpy
+polars
+pandas
+pyarrow
+scikit-learn
+lightgbm
+shap
+jupyter
+matplotlib
+pytest
+httpx
+uvicorn
