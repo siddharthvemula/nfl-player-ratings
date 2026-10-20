@@ -4,6 +4,7 @@ Val MAE is on 2024. **Weighted** (by target-game dropbacks) is the official scor
 alongside it to show whether a change helps across all games or mostly on high-dropback ones.
 **Win %** = share of 5,000 bootstrapped 2024 seasons (QBs drawn with replacement) where the change beats
 the previous best (`bootstrap_compare()` in src/models/evaluate.py); about 50% means a coin flip.
+**Keep rule** (DECISIONS.md): win % ≥ 80 AND weighted train MAE also better than the current best. Otherwise drop.
 
 | date | change | hypothesis | val MAE (weighted) | val MAE (unweighted) | keep/drop |
 |------|--------|------------|--------------------|----------------------|-----------|

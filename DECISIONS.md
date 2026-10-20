@@ -181,3 +181,13 @@ this season's dropbacks pile up. Split by week, the shrunk model wins slightly i
 and loses in weeks 5-9 (+0.004) and 10+ (+0.001). Lesson: a linear model can only express a pattern
 that one of its features contains. The next features have to carry the handoff between seasons.
 Note on the bootstrap: there's still no fixed win-% cutoff (see above), but 5% is a clear loss.
+
+**Hard keep/drop rule (decided 2026-10-20, replaces "no fixed cutoff" above).**
+Keep a change only if BOTH hold:
+1. Its bootstrap win rate against the current best (`bootstrap_compare()`, 5,000 QB-resampled 2024 seasons) is **at least 80%**.
+2. Train seasons (2016-2023) show a gain **in the same direction** (lower weighted train MAE than the current best).
+Otherwise drop it. Why: Phase 4 gains are measured in thousandths, and with one val season it's easy to
+talk yourself into a lucky number. A fixed rule, set before seeing the next results, removes that
+temptation. Requiring train to agree guards against a change that happens to suit 2024's QBs.
+Not retroactive: carry-over (val 0.2312) stays the current best. Concept 1's linear model (win 54.5%)
+was kept only as a code base for later features, never as the new best.
