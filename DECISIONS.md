@@ -505,3 +505,7 @@ week's ranking, 29 were order flips between QBs with an exactly equal rating (po
 fixed), and 4 upcoming rows (week 7-8) updated because those QBs' own week-6 games arrived. Fix: rows are sorted by
 (passer_id, game_id) before ranking, so exact ties always break by passer_id, and the output is sorted by
 (season, week, rank, passer_id, game_id). Ratings are unchanged; a refresh now only shows real changes.
+Follow-up, same day: the second manual run still committed, because my Mac and GitHub's Linux machine differ in the 16th decimal
+of the fitted weights (0.00934980094903286 vs ...2767), which flipped near-tied QBs (Blough/Lock, 2019 wk 13). Ranks now use the
+rating rounded to 8 places (ties by passer_id), and the saved model constants are rounded to 12 significant digits
+(`_stable()`), so the same fit gives the same JSON on any machine. No rating or score changes (they were already rounded to 4 places).

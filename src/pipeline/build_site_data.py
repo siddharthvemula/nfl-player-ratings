@@ -118,6 +118,15 @@ def placeholder_targets(placeholders: pl.DataFrame, targets: pl.DataFrame) -> pl
     )
 
 
+def _stable(x):
+    """Round every float to 12 significant digits, so the same fit saved on another machine gives identical JSON."""
+    if isinstance(x, float):
+        return float(f"{x:.12g}")
+    if isinstance(x, dict):
+        return {k: _stable(v) for k, v in x.items()}
+    return x
+
+
 def rate_season(games: pl.DataFrame, targets: pl.DataFrame, season: int) -> tuple[pl.DataFrame, dict]:
     """Every rating for one season (played games plus any placeholders), with the SHAP pieces and extras."""
     rows, fitted = fit_and_predict(games, targets, season)
@@ -140,6 +149,7 @@ def rate_season(games: pl.DataFrame, targets: pl.DataFrame, season: int) -> tupl
         "weights": {c: float(w) for c, w in zip(FINAL_FEATURES, fitted["model"].coef_)},
         "feature_means": fitted["feature_means"],
     }
+    model = _stable(model)
     return rows, model
 
 
@@ -149,12 +159,13 @@ def to_records(rows: pl.DataFrame) -> list[dict]:
     Played games are ranked within their (season, week). Upcoming games are ranked all together: a QB whose
     team is on a bye has his next game a week later, but he belongs in this week's rankings.
     """
-    # Fixed row order first, so exact ties in the rating are ranked by passer_id every time (ordinal ranks follow row order).
+    # Fixed row order first, and ranks use the rating rounded to 8 places: different machines differ in the 16th decimal,
+    # which would flip near-tied QBs. Ties then break by passer_id (ordinal ranks follow row order) on every machine.
     rows = rows.sort("passer_id", "game_id").with_columns(pl.col(TARGET_COL).is_null().alias("upcoming"))
     rows = rows.with_columns(
         pl.when(pl.col("upcoming")).then(pl.lit(0)).otherwise(pl.col("week")).alias("rank_group")
     ).with_columns(
-        pl.col("neutral").rank("ordinal", descending=True).over("season", "rank_group").cast(pl.Int32).alias("rank")
+        pl.col("neutral").round(8).rank("ordinal", descending=True).over("season", "rank_group").cast(pl.Int32).alias("rank")
     )
     out = rows.select(
         "season", "week", "season_type", "game_id", "passer_id", "passer",
