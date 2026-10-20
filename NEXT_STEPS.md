@@ -1,9 +1,11 @@
 # Next steps
 
 ## Where we left off
-Phase 2 done: the target is locked (`src/features/target.py`; see DECISIONS.md, "Locked target").
-**Next: Phase 3**, starting with the simplest baseline (season-to-date average) and its fallback
-for rows with no history, scored with dropback-weighted + unweighted MAE on 2024 val.
+Phase 3 started in notebooks/02_baseline.ipynb.
+- Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
+**Next: Concept 2**, season-to-date average per QB (with a fallback for rows with no history).
+
+Phase 2 summary below.
 
 Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
 - Concept 1: `src/features/qb_games.py` builds one row per passer per game.

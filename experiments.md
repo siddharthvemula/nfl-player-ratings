@@ -5,3 +5,4 @@ alongside it to show whether a change helps across all games or mostly on high-d
 
 | date | change | hypothesis | val MAE (weighted) | val MAE (unweighted) | keep/drop |
 |------|--------|------------|--------------------|----------------------|-----------|
+| 2026-10-20 | Baseline: league average (train, weighted, +0.056) for every QB-game | The floor: a rating that ignores who the QB is. Every model must beat it | 0.240 | 0.270 | keep (baseline) |

@@ -115,3 +115,12 @@ Each row is one QB-game we predict, and its features may only use that QB's earl
 Why "row = the game being predicted" rather than "row = game N, target = game N+1": the numbers
 are the same, but no last-game-of-season rows get thrown away (they were just the next season's
 first game), and it matches the leakage rule exactly.
+
+## Phase 3: Baseline + evaluation
+
+**First baseline: one number for everyone, the train league average (+0.056, dropback-weighted).**
+A score only means something next to the score of a simple guess. This one ignores who the QB is,
+so any model that can't beat it (val weighted MAE 0.240, unweighted 0.270) has learned nothing.
+The number is computed from train only, so nothing from 2024 leaks in. It's weighted because the
+official score is weighted. Scoring lives in `src/models/evaluate.py` (`mae()` returns both MAEs),
+so every experiment is scored the same way.
