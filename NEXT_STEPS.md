@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Phase 2, resume at **Concept 6 (playoffs)**, then lock the target. When locking it, switch
+Phase 2, **Concept 6 (playoffs)** cells + Play cell added; waiting on Sid's playoffs call. Then lock the target. When locking it, switch
 `qb_games()` to average `qb_epa` (Concept 5 decision; the notebook still uses `epa` until then).
 
 Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
