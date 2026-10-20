@@ -222,3 +222,22 @@ linear refit of carry-over alone in 6 of 8 seasons (average +0.0016); 2024 (−0
 are the off years. About 0.0012 of the 2024 loss comes from refitting carry-over itself (0.98 weight +
 intercept), not from the defense term. Not overriding the rule; possible follow-up experiment: keep
 carry-over's weight fixed at 1 and learn only the defense adjustment.
+
+**Evaluation protocol v2: walk-forward CV + residual modeling (decided 2026-10-20, before any results under it).**
+Replaces single-season val scoring and the earlier hard keep rule.
+- **Walk-forward folds:** for each season S in 2019-2024, train only on seasons before S (2016..S-1) and
+  predict S. Nothing from a season after S is ever used to score S. That covers model weights *and* every
+  number fitted from data: the league average and every K (carry-over K, shrink K, defense K) are
+  re-picked inside each fold on its earlier seasons only. Score = dropback-weighted MAE on all six folds
+  pooled. Why: one val season is too noisy (Concept 4's train gain vs 2024 loss), and the leave-one-season-
+  out check in Concept 4 trained on *future* seasons, which can't happen in real use; walk-forward can't.
+- **Keep rule:** keep a change only if BOTH hold against the current best:
+  1. pooled bootstrap win rate ≥ 80% (`bootstrap_compare()`, QBs resampled across the pooled folds), and
+  2. it beats the current best in a majority of the individual fold seasons (at least 4 of 6).
+  Otherwise drop.
+- **Residual modeling by default:** carry-over's weight is fixed at 1. Features only learn an adjustment:
+  prediction = carry_over + (w0 + w1*f1 + ...), fit on (target − carry_over). Why: in Concepts 1-4 the
+  model kept re-learning carry-over's own scale (0.98, 0.83/1.03), which cost val accuracy and hid
+  whether the new feature helped.
+- **2025 is untouched** until the final test in Phase 5: the walk-forward code drops 2025 from both the
+  target rows and the history table before anything else runs.
