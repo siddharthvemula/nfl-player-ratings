@@ -55,3 +55,11 @@ signal. A higher cutoff throws away real games: at 20, 19.9% of rows go, includi
 hurt or benched early. Instead of a high cutoff, rows are weighted by dropbacks, so a 45-dropback
 game counts more than a 5-dropback one. (Weights are applied when training/evaluating, from
 Phase 3; exactly which week's dropbacks set the weight is settled when the target is defined.)
+
+**Target stays raw EPA per dropback; no per-play cap on the target.**
+The rating claims to predict next week's real EPA/dropback, so the target must be the real thing.
+Capping the target would also shrink MAE simply because the numbers got smaller, which would make
+experiments incomparable. The cost is irreducible noise (a future pick-six can't be predicted).
+Capping is still allowed on *features* (past weeks), where a huge play probably says little about
+the future. Queued as Phase 4 experiments: (1) per-play EPA cap on features, (2) Huber loss if
+raw-target outliers distort Ridge.
