@@ -107,3 +107,47 @@ def handoff_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: flo
         (start * dimmer).alias("last_piece"),
         (pl.col("std_avg") * (1 - dimmer)).alias("this_piece"),
     )
+
+
+# Concept 5: CPOE (accuracy), built with carry-over's recipe instead of EPA.
+CPOE_FEATURES = ["cpoe_carry"]
+CPOE_K = 200  # imaginary average-accuracy throws; default only, walk-forward picks it per fold
+
+
+def cpoe_features(games: pl.DataFrame, targets: pl.DataFrame, k: float = CPOE_K) -> pl.DataFrame:
+    """Add each QB's CPOE so far, carried over from last season and shrunk by attempts.
+
+    Same two steps as carry_over(), counted in throws with a CPOE (cpoe_att), not dropbacks:
+      start      = last season's CPOE total / (his attempts last season + k)     -> 0 with no attempts
+      cpoe_carry = (CPOE total in weeks < N + k * start) / (attempts in weeks < N + k)
+    Shrunk toward 0, which is "average accuracy" by definition, so nothing is fitted from data.
+    Units: percentage points (+5 = completes 5% more passes than expected).
+    """
+    check_no_leakage(CPOE_FEATURES)
+
+    # Step 1: running totals before week N, same season (shift by one game, like base_features).
+    running = (
+        games.sort("season", "week")
+        .with_columns(
+            pl.col("cpoe_sum").cum_sum().shift(1).over("passer_id", "season").fill_null(0.0).alias("std_cpoe"),
+            pl.col("cpoe_att").cum_sum().shift(1).over("passer_id", "season").fill_null(0).alias("std_att"),
+        )
+        .select("passer_id", "season", "week", "std_cpoe", "std_att")
+    )
+
+    # Step 2: full-season totals, relabeled as "last season" for the following year.
+    last = (
+        games.group_by("passer_id", "season")
+        .agg(pl.col("cpoe_sum").sum().alias("last_cpoe"), pl.col("cpoe_att").sum().alias("last_att"))
+        .with_columns(pl.col("season") + 1)
+    )
+
+    # Step 3: last season sets the starting point; this season's throws pile on top of it.
+    start = pl.col("last_cpoe") / (pl.col("last_att") + k)
+    return (
+        targets.join(running, on=["passer_id", "season", "week"], how="left")
+        .join(last, on=["passer_id", "season"], how="left")
+        .with_columns(pl.col("std_cpoe", "last_cpoe").fill_null(0.0), pl.col("std_att", "last_att").fill_null(0))
+        .with_columns(((pl.col("std_cpoe") + k * start) / (pl.col("std_att") + k)).alias("cpoe_carry"))
+        .drop("std_cpoe", "std_att", "last_cpoe", "last_att")
+    )

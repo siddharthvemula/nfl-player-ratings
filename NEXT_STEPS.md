@@ -23,9 +23,11 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   Reproduce: last section of notebooks/03_features_ridge.ipynb.
 - Walk-forward table now starts with the naive floor: league average (per-fold, earlier seasons only) = 0.2367 pooled.
   Carry-over beats it in 6/6 seasons; the current best beats it by 0.0108.
-**Next: Concept 5, CPOE** (Sid starts it in a new chat), as a residual feature on top of the current best,
-shrunk by attempts, weeks < N only, judged by the v2 keep rule. Then sack rate, home/away.
-Ridge once there are enough features for it to matter.
+- Concept 5 done: CPOE (`cpoe_features()`), pooled 0.2260 vs 0.2259, win 35%, 3/6. Dropped: it mostly repeats
+  carry-over (corr 0.72), and its weight comes out negative. **Current best still C4, 0.2259.**
+**Next: Concept 6, sack rate** (QB-owned, fast to stabilize). Before building it, check that it is correlated
+with carry-over's errors and not just with carry-over (CPOE's lesson). Then home/away. Ridge once there are
+enough features for it to matter.
 
 Phase 2 summary below.
 

@@ -32,6 +32,11 @@ def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
             pl.col(epa_col).sum().alias("epa_sum"),
             # mean() skips null EPA, so this is epa_sum / (dropbacks with an EPA).
             pl.col(epa_col).mean().alias("epa_per_db"),
+            # CPOE (Phase 4, Concept 5): totals over throws that have one. Sacks, scrambles and
+            # some passes are blank; sum() skips them and cpoe_att counts only the filled ones,
+            # so blanks are never treated as "exactly average accuracy" (0).
+            pl.col("cpoe").sum().alias("cpoe_sum"),
+            pl.col("cpoe").is_not_null().sum().alias("cpoe_att"),
         )
         .sort(["season", "week", "game_id", "posteam", "dropbacks"], descending=[False, False, False, False, True])
     )

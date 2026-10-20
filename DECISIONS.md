@@ -273,3 +273,20 @@ Re-run of the v2 table with 2015 history (folds still 2019-2024): conclusions un
 - C2, C3 dropped vs C1 (win 1.3% each, 0/6 seasons).
 - C4 kept: **C1 + opponent defense = 0.2259, the current best** (win 99.7% vs C1, 4/6 seasons; defense
   weight 0.43-0.60 across folds).
+
+**Phase 4, Concept 5: CPOE dropped (pooled 0.2260 vs 0.2259, win 35%, 3/6 seasons).**
+`cpoe_features()`: carry-over's recipe on CPOE. Each QB starts from last season's CPOE, shrunk toward 0 by
+attempts, then this season's throws in weeks < N pile on. Shrinking toward 0 needs no fitted number, since
+CPOE is "over expected" by definition. Blanks (sacks, scrambles) are skipped, never filled with 0.
+K is picked per fold together with the defense K. The folds chose heavy shrinkage (500-1200).
+Why it fails: CPOE is almost entirely a copy of what carry-over already knows. On 2016-2023 it correlates
+0.72 with carry-over and −0.01 with carry-over's errors. On top of C1's raw averages, its weight turns
+negative (−0.013 to −0.018 per CPOE point, all six folds). It works as a small correction to the EPA averages,
+not as new information. Alone on top of carry-over it does a bit better (0.2284 vs 0.2287, win 84%), but only
+3/6 seasons, and its sign flips between folds. The early-weeks hypothesis failed: weeks 1-4 got slightly worse.
+Lesson: "stabilizes faster" only helps if the faster signal holds something the slower one doesn't. Here,
+EPA already includes completions, and carry-over's last season covers the early weeks.
+**Leakage note (flagged, not fixed):** nflverse's expected-completion model, which defines CPOE, was fit on
+historical seasons that may include fold seasons. The same is true of the EP model behind EPA, which the
+target and every feature already use. It's a small, shared risk, not specific to this feature.
+Current best is unchanged: C4, 0.2259.

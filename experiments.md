@@ -42,5 +42,6 @@ at the time. Keep = win ≥ 80% AND better in ≥ 4 of 6 seasons. Reproduced in 
 | 2026-10-20 | C2: + shrunk features | C1 | 0.2287 | 0.2275 | 1.3 | 0/6 | −.0017 −.0001 −.0017 −.0003 −.0015 −.0019 | drop |
 | 2026-10-20 | C3: + handoff pieces | C1 | 0.2286 | 0.2275 | 1.3 | 0/6 | −.0015 −.0004 −.0020 −.0000 −.0013 −.0016 | drop |
 | 2026-10-20 | C4: C1 + opponent defense | C1 | **0.2259** | 0.2275 | 99.7 | 4/6 | +.0042 +.0047 +.0006 −.0001 +.0008 −.0005 | **keep** (current best) |
+| 2026-10-20 | C5: C4 + CPOE (cpoe_carry: carry-over recipe on CPOE, shrunk toward 0 by attempts; fold K (def, CPOE): (200,500) (100,800) (200,800) (200,1200) ×3). Hypothesis: accuracy stabilizes faster than EPA, so it helps most in weeks 1-4 | C4 | 0.2260 | 0.2259 | 35.2 | 3/6 | −.0009 +.0004 −.0001 +.0008 +.0004 −.0012 | drop. CPOE weight negative in all six folds (−0.013 to −0.018 per CPOE point). Weeks 1-4 got *worse* (−.0006), 10+ slightly better (+.0004) |
 
 Floor check: the current best (C4) beats the league average by 0.0108 pooled (win 100%, 6/6 seasons; per season +.0105 +.0166 +.0108 +.0083 +.0107 +.0082).
