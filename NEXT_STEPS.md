@@ -6,8 +6,8 @@ per game (dropbacks, epa_per_db); notebook has a Play cell for it. Exploration u
 train seasons (2016–2023) only.
 Concept 2 (sample size) covered via the Concept 1 Play cell (min 3 dropbacks + weights).
 Concept 3 (outliers) done: target stays raw; feature cap + Huber queued for Phase 4.
-**Next:** 4 missing values (passer_player_id is
-null on every scramble), 5 epa vs qb_epa, 6 playoffs. Then write the target definition.
+Concept 4 (missing values) Play cell built: scrambles have blank passer_player_id.
+**Next:** finish Concept 4 (quiz), then 5 epa vs qb_epa, 6 playoffs. Then write the target definition.
 
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
