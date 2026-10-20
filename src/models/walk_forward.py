@@ -118,12 +118,14 @@ def run_fold(games: pl.DataFrame, targets: pl.DataFrame, season: int, exp: Exper
         if best is None or score < best[0]:
             best = (score, k, model, feats)
     _, k, model, feats = best
-    picked |= {"feature_k": k, "intercept": float(model.intercept_), "weights": dict(zip(exp.feature_cols, model.coef_.round(4)))}
+    train = feats.filter(pl.col("season") < season)
+    picked |= {"feature_k": k, "intercept": float(model.intercept_), "weights": dict(zip(exp.feature_cols, model.coef_.round(4))),
+               "model": model, "feature_means": {c: float(train[c].mean()) for c in exp.feature_cols}}
 
     # Step 3b (optional): swap in a different model on the same features, its setting picked on season - 1.
     if exp.make_model is not None:
         param = pick_param(feats, season, exp)
-        model = fit_residual(feats.filter(pl.col("season") < season), exp.feature_cols, exp.make_model(param))
+        model = fit_residual(train, exp.feature_cols, exp.make_model(param))
         picked |= {"param": param, "model": model}
 
     # Step 4: predict the held-out season.

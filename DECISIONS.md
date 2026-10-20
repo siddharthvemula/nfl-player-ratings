@@ -352,3 +352,18 @@ The honest takeaway: the grid's edge is where the signal is, and a smaller grid 
 be a fair, pre-registered next experiment. It would still be judged with the per-fold pick.
 **Final model for now: C6 plain linear (pooled 0.2256).** It ties LightGBM, and it's simpler, faster, and every weight
 can be read directly.
+
+**Final model is the plain linear C6 (Sid's call). The optional smaller LightGBM grid is skipped:** choosing a smaller
+grid now would be shaped by results already seen (every fold picked the grid's smallest setting), so it couldn't be a
+fair test.
+
+**SHAP for the final linear model: exact, no sampling.** `explain()` in `src/models/final.py`. For a linear adjustment,
+each feature's SHAP value is `weight × (his value − training mean)`, and the pieces add up exactly:
+rating = carry-over + average adjustment + sum of feature pieces, where average adjustment = intercept + Σ weight × mean
+(the adjustment for a typical training row; −0.025 in the 2024 fold). `check_explanation_adds_up()` enforces this.
+Training means are unweighted, to match shap's convention, so the explanation baseline is "a typical training row".
+Verified against `shap.LinearExplainer` with the fold's full training rows as background: max difference 2e-17 over
+all 622 games of 2024. Two traps found while checking: (1) shap silently subsamples the background to 100 rows unless
+`max_samples` is raised (off by up to 0.002); (2) the background must be built exactly as the fold built it.
+`sack_features()` takes its league rate from seasons before the newest one in the table, so a table that stops at
+2023 gets a slightly different rate. `fit_and_predict()` (one walk-forward fold) plus `explain()` is what the API will call.

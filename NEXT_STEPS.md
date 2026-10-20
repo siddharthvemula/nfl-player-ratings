@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 5, after LightGBM's walk-forward result (dropped, a tie). Next: SHAP, then the one-time 2025 test.
+Where we left off: Phase 5, SHAP done. Next: freeze the final model spec, then the one-time 2025 test.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -36,8 +36,10 @@ Phase 5 started in notebooks/04_lightgbm.ipynb.
 - Concept 1 done: LightGBM (`make_lgbm()`), pooled 0.2254 vs C6 0.2256, win 67.6%, 3/6. Dropped (a tie, as Sid predicted).
   Gain only on low-history QBs (+.0010). Folds picked the smallest grid setting; (4,100) fixed would pass (win 80.8%), but
   that's hindsight, not eligible.
-**Next (Sid's call):** optionally a pre-registered smaller grid ({2,4} leaves × {50,100} trees, per-fold pick); then SHAP to
-explain the ratings; then the one-time 2025 test of the final model (C6 linear unless something beats it). Then Phases 6-8.
+- Smaller LightGBM grid skipped (Sid: it would be shaped by results already seen). **Final model: C6 plain linear.**
+- Concept 2 done: SHAP (`explain()` in `src/models/final.py`), weight × (value − training mean) on top of carry-over.
+  Matches `shap.LinearExplainer` to 2e-17 on all 2024 games.
+**Next:** freeze the final model spec in DECISIONS.md (own commit), then the one-time 2025 test. Then Phases 6-8.
 
 Phase 2 summary below.
 
