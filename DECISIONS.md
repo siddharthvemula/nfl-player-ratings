@@ -434,3 +434,12 @@ Endpoints: `/api/meta`, `/api/rankings?season=&week=` (default = the current upc
 only what the server needs (what Vercel installs); the pipeline, notebooks and tests use `requirements-ml.txt`
 (which includes it). Shipping polars/LightGBM/SHAP/Jupyter to a function that only reads JSON would be slow and
 could exceed Vercel's size limit.
+
+**React frontend (`frontend/`, Vite + React + TypeScript, Recharts).** Pages: Rankings (week picker, team/QB filter,
+confidence filter, sort; each tier's real past error shown under the table), Players (search), Player (rating history
+chart: the rating made before each game vs the actual result; SHAP waterfall for any game; games table), Model Lab
+(the 2025 test, then every experiments.md table with keep/drop badges and a kept/dropped filter), Method.
+Chart colors follow the dataviz palette: blue (rating) and orange (actual), validated for color-blind separation and
+contrast in light and dark mode. The SHAP waterfall uses blue for pushes up and red for pushes down, and every bar
+also prints its signed value, so the meaning never depends on color alone. Dark mode follows the OS. In dev, Vite
+proxies /api to uvicorn; on Vercel the same paths hit the Python function, so the frontend code is identical.
