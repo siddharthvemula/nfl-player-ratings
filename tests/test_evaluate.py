@@ -84,3 +84,19 @@ def test_carry_over_starts_from_shrunk_last_season():
     assert abs(get("vet", 2024, 2) - (-4.0 + 250 * start) / (40 + 250)) < 1e-9
     assert abs(get("rookie", 2024, 1) - 0.05) < 1e-9                        # no last season: league average
     assert abs(get("vet", 2023, 1) - 0.05) < 1e-9                           # first season in data
+
+
+def test_bootstrap_compare():
+    from src.models.evaluate import bootstrap_compare
+
+    # b is better on every QB -> wins every resample; observed gain = 0.2 - 0.1.
+    df = pl.DataFrame({
+        "passer_id": ["a", "a", "b", "c"], "target": [0.0] * 4, "weight": [10, 20, 30, 40],
+        "pa": [0.2] * 4, "pb": [0.1] * 4,
+    }).with_columns(pl.col("weight").cast(pl.UInt32))
+    out = bootstrap_compare(df, "pa", "pb", n_boot=200)
+    assert abs(out["gain"] - 0.1) < 1e-9
+    assert out["win_rate"] == 1.0
+
+    # Same predictions -> never a win.
+    assert bootstrap_compare(df, "pa", "pa", n_boot=200)["win_rate"] == 0.0

@@ -6,7 +6,9 @@ Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 2 done: season-to-date average: val 0.259 / 0.290, *worse* than league average (small samples are noise).
 - Concept 3 done: shrinkage (K=250, picked on train): val 0.233 / 0.263, best baseline so far.
 - Concept 4 done: carry-over (K=300, picked on train): val 0.231 / 0.261, best baseline so far (bar to beat).
-**Next: Concept 5**, is a 0.002 gain real or noise? Compare two models game by game and week by week, then wrap up Phase 3.
+- Concept 5 done: bootstrap by QB (`bootstrap_compare()`): shrinkage beats league average in 98% of fake seasons, carry-over beats shrinkage in 90%.
+Phase 3 done. **Bar to beat: carry-over, val weighted MAE 0.231.**
+**Next: Phase 4**, engineered features (no leakage) + Ridge regression, each experiment logged with its bootstrap win %.
 
 Phase 2 summary below.
 
@@ -22,7 +24,7 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
 2. [x] **Explore + define target**: explore QB dropbacks; pin down next-week EPA/dropback.
-3. [ ] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
+3. [x] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
 4. [ ] **Features + Ridge**: engineered features (no leakage), Ridge regression.
 5. [ ] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.
 6. [ ] **FastAPI backend**: serve ratings, player history, experiments (api/).

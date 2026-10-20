@@ -149,3 +149,16 @@ gain isn't a val fluke, but it's small. On val it helps a lot in week 1 (33 game
 slightly worse in weeks 2–4, and slightly better after that, since with K = 300 last season still has
 some pull all year. It does nothing for rookies or backups. Kept as the Phase 3 bar to beat.
 Open question for later: whether a 0.002 gain is real or noise.
+
+**Bootstrap by QB to judge small gains (`bootstrap_compare()`).**
+One val season can't tell whether a 0.002 gain is real. The bootstrap builds 5,000 fake 2024 seasons by
+drawing QBs with replacement and counts how often the new model wins. It draws whole QBs, not games,
+because one QB's games are linked (carry-over helped or hurt Bryce Young all season), and treating
+them as independent would overstate certainty. Results: shrinkage beats league average in 98.0% of fake
+seasons (gain 95% range +0.0004 to +0.013); carry-over beats shrinkage in 89.6% (−0.001 to +0.005):
+probably real, not certain. Every experiment from Phase 4 on logs its win % against the current best.
+The keep/drop call uses the win % together with whether train agrees; there's no fixed cutoff.
+
+**Phase 3 result: carry-over (val 0.231) is the bar to beat.** The whole range from "one number for
+everyone" to the best baseline is only 0.009 of MAE, because single games are noisy. Phase 4 gains will
+be measured in thousandths, which is why the bootstrap matters.
