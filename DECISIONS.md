@@ -367,3 +367,25 @@ all 622 games of 2024. Two traps found while checking: (1) shap silently subsamp
 `max_samples` is raised (off by up to 0.002); (2) the background must be built exactly as the fold built it.
 `sack_features()` takes its league rate from seasons before the newest one in the table, so a table that stops at
 2023 gets a slightly different rate. `fit_and_predict()` (one walk-forward fold) plus `explain()` is what the API will call.
+
+## Final model spec (frozen 2026-10-20, before any 2025 number was computed)
+
+Nothing below changes after the 2025 test runs, whatever it says.
+- **Prediction** = carry-over + linear adjustment. Carry-over's weight is fixed at 1. The adjustment is
+  `LinearRegression` fit on (target − carry_over), weighted by dropbacks.
+- **Features (6):** `std_avg`, `std_dropbacks`, `last_avg`, `last_dropbacks` (C1), `def_shrunk` (C4),
+  `sack_carry` (C6). Builder: `build_final()` in `src/models/final.py`.
+- **Fitted from the training seasons only** (`fit_and_predict()` = one walk-forward fold): league average;
+  carry-over K from {100,150,200,250,300,400,500,700,1000} by weighted MAE; (defense K, sack K) from
+  {50,100,200,300,500,800,1200,2000} × {50,100,200,300,500,800,1200} by in-sample weighted MAE of the
+  adjustment; then the weights.
+- **Target and rows:** as locked in Phase 2 (qb_epa per dropback, 3+ dropbacks, regular season + playoffs).
+- **2025 test procedure** (`src/models/final_test.py`, run once): train on 2016-2024 (2015 history only), score
+  every 2025 QB-game. Official score: dropback-weighted MAE; unweighted also reported. Compared against the league
+  average and carry-over, both fitted on 2016-2024 the same way. Bootstrap by QB (5000 resamples, seed 0) for
+  final vs carry-over, final vs league average, and carry-over vs league average. Pre-registered secondary: the
+  same comparison split by low-history QBs (last season ≤ 212 dropbacks) vs veterans.
+- **Expectation from walk-forward** (pooled 2019-2024): final 0.2256, carry-over 0.2287, league average 0.2367.
+  The final model beat carry-over in 6 of 6 single seasons, by +.0006 (2024) to +.0057 (2019), and the league
+  average in 6 of 6 by +.0087 to +.0160. One season is noisy (2024's gain over carry-over was only +.0006), so a
+  2025 loss to carry-over is possible and would be reported as is.

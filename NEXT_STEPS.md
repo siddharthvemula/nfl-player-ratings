@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 5, SHAP done. Next: freeze the final model spec, then the one-time 2025 test.
+Where we left off: Phase 5, final model spec frozen (DECISIONS.md). Next: the one-time 2025 test.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
