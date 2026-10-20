@@ -1,1 +1,0 @@
-{"root":["./src/api.ts","./src/format.ts","./src/main.tsx","./src/components/confidencebadge.tsx","./src/components/ratingchart.tsx","./src/components/shapwaterfall.tsx","./src/pages/method.tsx","./src/pages/modellab.tsx","./src/pages/player.tsx","./src/pages/players.tsx","./src/pages/rankings.tsx","./vite.config.ts"],"version":"5.6.3"}

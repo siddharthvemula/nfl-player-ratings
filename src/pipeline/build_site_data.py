@@ -230,9 +230,16 @@ def build(refresh: bool = False, out_dir: Path = SITE_DIR) -> dict:
     }
     experiments = parse_experiments((PROJECT_ROOT / "experiments.md").read_text())
 
+    # Nothing new (e.g. the off-season): keep the old timestamp so the files don't change and nothing gets committed.
     out_dir.mkdir(parents=True, exist_ok=True)
+    dump = lambda payload: json.dumps(payload, separators=(",", ":"), default=str)
+    old_meta = out_dir / "meta.json"
+    if old_meta.exists() and all((out_dir / n).exists() and (out_dir / n).read_text() == dump(x) for n, x in [("ratings.json", records), ("experiments.json", experiments)]):
+        previous = json.loads(old_meta.read_text())
+        if dump({**previous, "updated_at": None}) == dump({**meta, "updated_at": None}):
+            meta["updated_at"] = previous["updated_at"]
     for name, payload in [("meta.json", meta), ("ratings.json", records), ("experiments.json", experiments)]:
-        (out_dir / name).write_text(json.dumps(payload, separators=(",", ":"), default=str))
+        (out_dir / name).write_text(dump(payload))
     print(f"Wrote {len(records):,} ratings ({placeholders.height} upcoming, {current['season']} week {current['week']}) to {out_dir}")
     return meta
 

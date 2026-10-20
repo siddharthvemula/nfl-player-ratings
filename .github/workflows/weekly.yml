@@ -1,0 +1,71 @@
+# Every Tuesday: pull new nflverse data, recompute ratings, commit site_data/, redeploy.
+# Runs after Monday Night Football and nflverse's overnight update. "Run workflow" on the Actions tab runs it by hand.
+name: Weekly ratings refresh
+
+on:
+  schedule:
+    - cron: "0 14 * * 2" # Tuesdays 14:00 UTC (10am US Eastern in season)
+  workflow_dispatch:
+
+permissions:
+  contents: write # to push the refreshed site_data/
+
+concurrency:
+  group: weekly-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install
+        run: pip install -r requirements-ml.txt
+
+      # Past seasons never change: keep the downloaded play-by-play between runs (only the current season is re-downloaded).
+      - name: Restore play-by-play cache
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: pbp-${{ github.run_id }}
+          restore-keys: pbp-
+
+      - name: Tests
+        run: python -m pytest -q
+
+      - name: Rebuild ratings
+        run: python -m src.pipeline.build_site_data --refresh
+
+      - name: Check the new data serves cleanly
+        run: python -m pytest -q tests/test_api.py
+
+      - name: Commit and push if anything changed
+        id: commit
+        run: |
+          git add site_data
+          if git diff --cached --quiet; then
+            echo "No new games: nothing to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Weekly ratings refresh ($(date -u +%Y-%m-%d))"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Vercel redeploys on every push. The deploy hook is a backup in case Vercel skips commits made by the bot.
+      # Optional: add the hook URL as the repository secret VERCEL_DEPLOY_HOOK_URL.
+      - name: Trigger Vercel redeploy
+        if: steps.commit.outputs.changed == 'true' && env.HOOK != ''
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$HOOK" > /dev/null

@@ -443,3 +443,17 @@ Chart colors follow the dataviz palette: blue (rating) and orange (actual), vali
 contrast in light and dark mode. The SHAP waterfall uses blue for pushes up and red for pushes down, and every bar
 also prints its signed value, so the meaning never depends on color alone. Dark mode follows the OS. In dev, Vite
 proxies /api to uvicorn; on Vercel the same paths hit the Python function, so the frontend code is identical.
+
+**Deploy: Vercel Hobby (free, no card), one project = static Vite build + one Python function.** `vercel.json` sets
+`framework: vite` explicitly (a root requirements.txt listing FastAPI could otherwise auto-select the FastAPI preset,
+which routes *every* request to Python and would hide the frontend), builds `frontend/` to `frontend/dist`, and
+rewrites `/api/*` to the function `api/index.py` (bundled with `site_data/**`, without notebooks/tests/src/frontend);
+every other path falls back to `index.html` for client-side routing. Vercel's newer "Services" feature also fits but
+is in beta, so the long-standing `/api` directory route was chosen. Checked from Vercel's docs (Aug 2026); the first
+real deploy is the final check.
+**Weekly refresh: GitHub Actions, Tuesdays 14:00 UTC** (`.github/workflows/weekly.yml`, also runnable by hand). Restores
+cached past seasons, re-downloads the current one, runs the tests, rebuilds `site_data/`, re-checks the API on the
+new files, and commits only if something changed (the pipeline keeps the old timestamp when the ratings are
+identical, so the off-season makes no commits). Vercel redeploys on the push. A deploy-hook call is a backup, used
+only if the `VERCEL_DEPLOY_HOOK_URL` secret is set. `ci.yml` runs the tests and the frontend build on every push.
+`requirements-ml.txt` is pinned to exact versions so a library release can't silently change the weekly numbers.
