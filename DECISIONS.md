@@ -47,3 +47,11 @@ silently drop scrambles from each QB's dropbacks. `passer_id` covers passes, sac
 **QB-game table keeps every passer for now.**
 There are 1.23 QB-game rows per team-game in train: backups, plus trick-play passers (Taysom Hill,
 punters, receivers). Filtering them out is a sample-size decision, made in Concept 2.
+
+**Minimum 3 dropbacks per QB-game, plus sample weights by dropbacks (Sid's call).**
+In train, a cutoff of 3 drops 11.5% of rows: mostly trick-play passers (Taysom Hill, punters,
+receivers), plus ~180 cameo rows from real QBs (kneel-downs, mop-up), which carry almost no
+signal. A higher cutoff throws away real games: at 20, 19.9% of rows go, including starters
+hurt or benched early. Instead of a high cutoff, rows are weighted by dropbacks, so a 45-dropback
+game counts more than a 5-dropback one. (Weights are applied when training/evaluating, from
+Phase 3; exactly which week's dropbacks set the weight is settled when the target is defined.)
