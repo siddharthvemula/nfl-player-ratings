@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Phase 2, resume at **Concept 5 (epa vs qb_epa)**, then **Concept 6 (playoffs)**, then lock the target.
+Phase 2, **Concept 5 (epa vs qb_epa)** cells + Play cell added; waiting on Sid's choice of target column. Then **Concept 6 (playoffs)**, then lock the target.
 
 Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
 - Concept 1: `src/features/qb_games.py` builds one row per passer per game.
