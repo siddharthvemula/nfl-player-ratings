@@ -57,7 +57,8 @@ Frontend redesign (approved 2026-10-20), one commit per page:
 - [x] Rankings (QB landscape scatter + week slider, top-3 cards, sortable table), dark theme + light toggle, Vercel Analytics.
 - [x] Player, Players, Method (rating explanation fixed), Model Lab cards.
 - [x] Model Lab calibration plot (2025, 10 equal-count bins; `calibration_bins()` in evaluate.py; top group forecast +0.227, actual +0.175, below the diagonal as Sid predicted).
-- [ ] Sid: `gh auth login`, then: repo About link, one manual run of the weekly workflow (confirm commit + redeploy).
+- [x] `gh auth login` done; About link was already set; weekly workflow run by hand 2026-10-20: tests, rebuild, commit (af22c59) and Vercel redeploy all worked.
+- [x] Build output now has a stable order (ties in rating broken by passer_id); GitHub Actions bumped to Node-24 versions (checkout v7, setup-python v7, setup-node v7, cache v6).
 - [ ] Sid: enable Web Analytics in the Vercel project (Analytics tab).
 
 Phase 2 summary below.

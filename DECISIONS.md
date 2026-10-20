@@ -497,3 +497,11 @@ sit slightly below the diagonal (too optimistic) because the fitted slope is 0.8
 +0.26. Result: top group forecast +0.227, actual +0.175 (below the line, but only ~1.3 standard errors); the second-highest
 (+0.171 vs +0.130) is also below, and the middle groups scatter on both sides, so it's mostly noise around the diagonal with a
 mild optimistic tilt at the top. Descriptive only: it changes no model, rating or score, so it doesn't spend 2025 any further.
+
+**Stable build output (2026-10-20).** The first manual weekly run changed 116 rows besides the 2 new games (Purdy and Daniels,
+2026 week 6). Verified by comparing both versions of `ratings.json` by (passer_id, game_id): no past rating, actual or SHAP
+value changed. The differences were `rank`/`prev_rank` only: 25 week-6 ranks moved down because the 2 new QBs slotted into that
+week's ranking, 29 were order flips between QBs with an exactly equal rating (polars' ordinal rank follows row order, which wasn't
+fixed), and 4 upcoming rows (week 7-8) updated because those QBs' own week-6 games arrived. Fix: rows are sorted by
+(passer_id, game_id) before ranking, so exact ties always break by passer_id, and the output is sorted by
+(season, week, rank, passer_id, game_id). Ratings are unchanged; a refresh now only shows real changes.

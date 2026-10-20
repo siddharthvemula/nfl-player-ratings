@@ -149,7 +149,8 @@ def to_records(rows: pl.DataFrame) -> list[dict]:
     Played games are ranked within their (season, week). Upcoming games are ranked all together: a QB whose
     team is on a bye has his next game a week later, but he belongs in this week's rankings.
     """
-    rows = rows.with_columns(pl.col(TARGET_COL).is_null().alias("upcoming"))
+    # Fixed row order first, so exact ties in the rating are ranked by passer_id every time (ordinal ranks follow row order).
+    rows = rows.sort("passer_id", "game_id").with_columns(pl.col(TARGET_COL).is_null().alias("upcoming"))
     rows = rows.with_columns(
         pl.when(pl.col("upcoming")).then(pl.lit(0)).otherwise(pl.col("week")).alias("rank_group")
     ).with_columns(
@@ -167,7 +168,7 @@ def to_records(rows: pl.DataFrame) -> list[dict]:
         pl.col("avg_adjustment").round(4),
         pl.struct([pl.col(f"{c}_contrib").round(4).alias(c) for c in FINAL_FEATURES]).alias("contributions"),
         pl.struct([pl.col(c).cast(pl.Float64).round(4) for c in FINAL_FEATURES]).alias("features"),
-    ).sort("season", "week", "rank")
+    ).sort("season", "week", "rank", "passer_id", "game_id")  # a stable key, so a refresh only diffs real changes
     return out.to_dicts()
 
 
