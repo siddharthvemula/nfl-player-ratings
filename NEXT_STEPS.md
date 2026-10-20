@@ -50,7 +50,15 @@ Phases 6-8 plan approved (DECISIONS.md, "Phases 6-8").
 - [x] React frontend: `cd frontend && npm install && npm run dev` (with uvicorn running) → http://localhost:5173.
 - [x] vercel.json + GitHub Actions (weekly.yml: Tuesdays 14:00 UTC + manual; ci.yml on push). Live once Sid imports the repo on Vercel.
 - [x] README (results, method, limitations, data credit). Resume bullets given in chat.
-- [ ] Sid: import repo on Vercel (Hobby). Then: add live URL to README, verify the site and a manual weekly run.
+- [x] Live on Vercel: https://nfl-player-ratings.vercel.app (link in README).
+
+Frontend redesign (approved 2026-10-20), one commit per page:
+- [x] Site data + API: full names, headshots, team colors, raw EPA, previous rank, /api/test-2025.
+- [x] Rankings (QB landscape scatter + week slider, top-3 cards, sortable table), dark theme + light toggle, Vercel Analytics.
+- [x] Player, Players, Method (rating explanation fixed), Model Lab cards.
+- [ ] Model Lab calibration plot (2025, 10 bins): explain + Sid's prediction first (CLAUDE.md, ML work).
+- [ ] Sid: `gh auth login`, then: repo About link, one manual run of the weekly workflow (confirm commit + redeploy).
+- [ ] Sid: enable Web Analytics in the Vercel project (Analytics tab).
 
 Phase 2 summary below.
 

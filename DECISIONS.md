@@ -457,3 +457,34 @@ new files, and commits only if something changed (the pipeline keeps the old tim
 identical, so the off-season makes no commits). Vercel redeploys on the push. A deploy-hook call is a backup, used
 only if the `VERCEL_DEPLOY_HOOK_URL` secret is set. `ci.yml` runs the tests and the frontend build on every push.
 `requirements-ml.txt` is pinned to exact versions so a library release can't silently change the weekly numbers.
+
+## Frontend redesign (approved by Sid 2026-10-20)
+
+**Dark theme by default, light toggle remembered per browser** (replaces "follows the OS"). One accent (blue) marks the
+model's rating everywhere; orange is only "actual result"; red only "lowers the rating" in the waterfall. Each pair that
+shares a chart (blue+orange, blue+red) passes the dataviz validator against both surfaces.
+
+**Display-only fields added to site_data and the API; the model and every rating are unchanged** (checked: every
+existing field is byte-identical after the rebuild). Full names and headshots come from nflverse's players table (all
+160 rated QBs match by gsis_id), team colors from nflverse's teams table. `raw_epa` is std_avg, the raw season-to-date
+EPA/dropback the model already sees, set to None before a QB's first dropback (std_avg is then just the league-average
+placeholder). `prev_rank` = his most recent earlier rank this season, so a bye week doesn't turn him into "NEW".
+`test_2025.json` holds the 624 test games in one file (reproduces the 0.2382 weighted MAE).
+
+**QB landscape scatter:** x = raw EPA this season, y = rating. The fitted line is weighted by dropbacks, like the rest
+of the project; its slope (0.44 before 2026 week 7) is the model's shrinkage in one number. Dot area follows dropbacks
+(square-root radius), so a 20-dropback backup reads as a small sample. The axis is set by QBs with 30+ dropbacks; trick-
+play passers beyond it are pinned to the edge with an arrow (the tooltip shows the true value). Axes stay fixed across a
+season so dots move meaningfully as the slider changes weeks. Week 1 puts everyone at the league average, which is
+exactly what the model sees before any games.
+
+**Team colors are identity only, never the only cue:** dark primaries (BAL, CHI, NE...) are blended toward white until
+they reach 2:1 against the dark surface; names come from direct labels (top 5), tooltips and the table.
+
+**Plain-language rating:** a rating is expected EPA per dropback, and zero is not average (league average ≈ +0.06).
+So +0.24 is shown as "0.18 above average, about +6.6 points over a typical 36-dropback game" (36 = median dropbacks in
+QB-games with 15+). The old Method text ("+0.10 = a tenth of a point better than an average dropback") was wrong
+about this and was fixed.
+
+**Vercel Web Analytics** (`@vercel/analytics`, page views only, no cookies); it records nothing until it is enabled in
+the Vercel project's Analytics tab.

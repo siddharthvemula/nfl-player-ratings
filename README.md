@@ -7,7 +7,7 @@ tested once on a full held-out season (2025).
 Full-stack ML app: Python data pipeline + model → precomputed JSON → **FastAPI** backend → **React** frontend, deployed
 on Vercel's free tier and refreshed every Tuesday by GitHub Actions.
 
-**Live site:** _link added after the first deploy_
+**Live site: [nfl-player-ratings.vercel.app](https://nfl-player-ratings.vercel.app)**
 
 ## Results: the one-time 2025 test
 
