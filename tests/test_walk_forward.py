@@ -96,3 +96,20 @@ def test_swapped_model_picks_its_setting_without_the_scored_season():
     assert [p["param"] for p in picks[:-1]] == [p["param"] for p in picks2[:-1]]
     early = lambda p: p.filter(pl.col("season") < 2024).sort("season", "week", "passer_id")["prediction"]
     assert (early(pooled) - early(pooled2)).abs().max() < 1e-12
+
+
+def test_lightgbm_runs_in_walk_forward_without_looking_ahead():
+    from src.features.history import BASE_FEATURES, base_features
+    from src.features.target import build_targets
+    from src.models.boosting import make_lgbm
+    from src.models.walk_forward import Experiment, walk_forward
+
+    exp = Experiment("lgbm", BASE_FEATURES, lambda g, t, la, k: base_features(g, t, la),
+                     make_model=make_lgbm, param_grid=((4, 10), (8, 20)))
+    games = _history()
+    pooled, picks = walk_forward(games, build_targets(games), exp)
+    changed = _shifted(games, 2024, 50.0)
+    pooled2, picks2 = walk_forward(changed, build_targets(changed), exp)
+    assert [p["param"] for p in picks[:-1]] == [p["param"] for p in picks2[:-1]]
+    early = lambda p: p.filter(pl.col("season") < 2024).sort("season", "week", "passer_id")["prediction"]
+    assert (early(pooled) - early(pooled2)).abs().max() < 1e-12

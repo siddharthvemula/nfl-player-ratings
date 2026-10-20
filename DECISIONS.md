@@ -330,3 +330,25 @@ average 0.007, last-season average 0.006. Carry-over already holds the averages,
 "who's the opponent" and "how much did he play".
 **Final Phase 4 model: C6 = carry-over + linear adjustment on [std_avg, std_dropbacks, last_avg, last_dropbacks,
 def_shrunk, sack_carry], pooled walk-forward MAE 0.2256** (league average 0.2367, carry-over 0.2287).
+
+## Phase 5: LightGBM + SHAP
+
+**LightGBM fits the same walk-forward protocol, changing only the model.** `make_lgbm()` in `src/models/boosting.py`.
+Same six features and per-fold K picks as C6, still a residual on carry-over (carry-over's weight fixed at 1), so any
+difference comes from trees vs one weight per feature. Settings chosen to resist noise before any run: learning rate
+0.03, at least 100 games per leaf (a leaf can't be one QB's hot streak), 80% of games per tree. Leaves per tree and
+number of trees are picked per fold on season S−1 (`pick_param()`), the same hook Ridge used. Tested: changing 2024
+moves nothing in the 2019-2023 folds.
+
+**LightGBM dropped: a tie (pooled 0.2254 vs 0.2256, win 67.6%, 3/6 seasons).** Sid predicted a tie, with any gain
+coming from low-history QBs, and both held. Low-history QBs (last season ≤ 212 dropbacks): +0.0010, win 83.9%.
+Veterans: −0.0001. The interactions trees can learn are real but small, and the linear model's dropback features
+already capture most of the rookie/backup effect. Share of tree gain: opponent defense ~0.3, last-season dropbacks
+~0.25, this-season dropbacks ~0.17, sack rate ~0.1, the two averages ~0.05-0.1 each (same ranking as Ridge's weights).
+**Hindsight trap, flagged loudly:** every fold picked the smallest setting on the grid ((4 leaves, 100 trees) in five,
+(8, 100) in 2022). Fixing (4,100) everywhere scores 0.2252, win 80.8%, 4/6, which would pass. But that setting was
+chosen by looking at the fold scores, so it's the same leakage the S−1 pick exists to prevent, and it isn't eligible.
+The honest takeaway: the grid's edge is where the signal is, and a smaller grid ({2, 4} leaves × {50, 100} trees) would
+be a fair, pre-registered next experiment. It would still be judged with the per-fold pick.
+**Final model for now: C6 plain linear (pooled 0.2256).** It ties LightGBM, and it's simpler, faster, and every weight
+can be read directly.

@@ -48,3 +48,10 @@ at the time. Keep = win ≥ 80% AND better in ≥ 4 of 6 seasons. Reproduced in 
 | 2026-10-20 | Final Phase 4 model: Ridge on C6's features (scaled to SD 1; alpha picked per fold on season S−1 from 0.1-30000: 30000, 0.1, 0.1, 10000, 10000, 30000). Hypothesis: a penalty on big weights steadies six correlated features | C6 | 0.2257 | 0.2256 | 17.9 | 5/6 | −.0011 +.0000 +.0000 +.0000 +.0002 +.0002 | drop: ties plain linear except 2019, where 3 training seasons picked the biggest penalty. **Final Phase 4 model = C6, plain linear (pooled 0.2256)** |
 
 Floor check (at C4): the then-best (C4) beats the league average by 0.0108 pooled (win 100%, 6/6 seasons; per season +.0105 +.0166 +.0108 +.0083 +.0107 +.0082).
+
+## Phase 5: gradient boosting (same walk-forward protocol, same six features as C6)
+
+| date | change | vs | pooled MAE | vs MAE | win % | seasons won | per-season gain 2019..2024 | keep/drop |
+|------|--------|----|-----------|--------|-------|-------------|----------------------------|-----------|
+| 2026-10-20 | LightGBM on C6's features, residual on carry-over (lr 0.03, min 100 games per leaf, 80% subsample; (leaves, trees) picked per fold on season S−1 from {4,8,16}×{100,300,600}: (4,100) ×5, (8,100) in 2022). Hypothesis (Sid: tie): trees can learn interactions (defense matters mostly for veterans), but 4,000 noisy rows limit them | C6 | 0.2254 | 0.2256 | 67.6 | 3/6 | −.0004 −.0007 +.0005 −.0003 +.0009 +.0012 | drop (tie, as Sid predicted). Low-history QBs (last season ≤ 212 db): +.0010, win 83.9%; veterans −.0001, win 39.4% |
+| 2026-10-20 | Reference only (hindsight, not a candidate): LightGBM with (4,100) fixed in every fold | C6 | 0.2252 | 0.2256 | 80.8 | 4/6 | — | not eligible: the setting was chosen after seeing fold scores |
