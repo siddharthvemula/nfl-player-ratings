@@ -63,3 +63,18 @@ def test_2015_is_history_only():
     exp = Experiment("raw", ["last_avg"], lambda g, t, la, k: base_features(g, t, la))
     pooled, _ = walk_forward(games, targets, exp)
     assert pooled["season"].min() == 2019
+
+
+def test_league_average_baseline_uses_earlier_seasons_only():
+    from src.features.target import build_targets
+    from src.models.baselines import league_average
+    from src.models.walk_forward import Experiment, walk_forward
+
+    games = _history()
+    targets = build_targets(games)
+    pooled, picks = walk_forward(games, targets, Experiment("league average", league_average_only=True))
+    for p in picks:
+        s = p["season"]
+        expected = league_average(targets.filter(pl.col("season").is_between(2016, s - 1)))
+        assert abs(p["league_avg"] - expected) < 1e-12
+        assert (pooled.filter(pl.col("season") == s)["prediction"] == expected).all()

@@ -32,12 +32,14 @@ class Experiment:
 
     build(games, targets, league_avg, k) must return targets plus feature_cols, using weeks < N only.
     k_grid: candidate K values, picked inside each fold on its earlier seasons (None = no K).
+    league_average_only: the naive baseline; every row gets the fold's league average (no features).
     """
 
     name: str
     feature_cols: list[str] = field(default_factory=list)
     build: Callable | None = None
     k_grid: tuple = (None,)
+    league_average_only: bool = False
 
 
 def fit_residual(train: pl.DataFrame, feature_cols: list[str]) -> LinearRegression:
@@ -72,6 +74,10 @@ def run_fold(games: pl.DataFrame, targets: pl.DataFrame, season: int, exp: Exper
     carry_k = pick_carry_k(games, earlier, league_avg)
     rows = carry_over(games, rows, league_avg, carry_k).rename({"prediction": BASE_COL}).select(*targets.columns, BASE_COL)
     picked = {"league_avg": league_avg, "carry_k": carry_k}
+
+    # Naive baseline: one number for everyone, the league average of the earlier seasons.
+    if exp.league_average_only:
+        return rows.filter(pl.col("season") == season).with_columns(pl.lit(league_avg).alias("prediction")), picked
 
     # No features: the experiment *is* carry-over.
     if not exp.feature_cols:

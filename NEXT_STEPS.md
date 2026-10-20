@@ -21,6 +21,8 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
 - Data fix: 2015 loaded as history only (features, never a target row). v2 table re-run, same conclusions.
   **Current best: carry-over + raw features + opponent defense, pooled walk-forward MAE 0.2259** (carry-over 0.2287).
   Reproduce: last section of notebooks/03_features_ridge.ipynb.
+- Walk-forward table now starts with the naive floor: league average (per-fold, earlier seasons only) = 0.2367 pooled.
+  Carry-over beats it in 6/6 seasons; the current best beats it by 0.0108.
 **Next: Concept 5, CPOE** (Sid starts it in a new chat), as a residual feature on top of the current best,
 shrunk by attempts, weeks < N only, judged by the v2 keep rule. Then sack rate, home/away.
 Ridge once there are enough features for it to matter.
