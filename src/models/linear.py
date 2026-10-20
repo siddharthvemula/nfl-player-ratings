@@ -24,3 +24,22 @@ def fit_linear(train: pl.DataFrame, feature_cols: list[str]) -> LinearRegression
 def predict_linear(model, df: pl.DataFrame, feature_cols: list[str]) -> pl.DataFrame:
     """Add a "prediction" column from a fitted model."""
     return df.with_columns(pl.Series("prediction", model.predict(df.select(feature_cols).to_numpy())))
+
+
+# Phase 4 final model: Ridge = linear regression with a penalty on big weights.
+RIDGE_ALPHAS = (0.1, 1, 10, 100, 1000, 3000, 10000, 30000)
+
+
+def make_ridge(alpha: float):
+    """Scale every feature to mean 0, SD 1, then Ridge with penalty alpha.
+
+    Scaling first matters: the penalty treats every weight the same, so a feature in big
+    units (dropbacks, ~500) and one in small units (sack rate, ~0.06) must be put on one
+    scale, or the penalty would squash one and ignore the other. alpha -> 0 is plain
+    linear regression; a big alpha pulls every weight toward 0 (adjustment -> a constant).
+    """
+    from sklearn.linear_model import Ridge
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    return make_pipeline(StandardScaler(), Ridge(alpha=alpha))

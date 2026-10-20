@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 4, final Ridge fit with all kept features (C1 + C4 + C6).
+Where we left off: Phase 5 started. LightGBM explained; waiting on Sid's prediction before training it.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -30,7 +30,9 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
 - Concept 6 done: sack rate (`sack_features()`), pooled 0.2256 vs 0.2259, win 93.2%, 4/6. **Kept: current best.**
   Weight is positive: carry-over over-punishes sacks, which repeat less than the rest of EPA.
 - Concept 7 done: home/away (`home_features()`), win 17.6%, dropped. Raw home edge is only +0.002 EPA/dropback.
-**Next: final Phase 4 Ridge fit** on the kept features (C1 raw + opponent defense + sack rate).
+- Final Ridge (`make_ridge()`, alpha per fold on season S−1): 0.2257 vs 0.2256, win 17.9%. Dropped: ties plain linear.
+Phase 4 done. **Final Phase 4 model: C6 plain linear, pooled walk-forward MAE 0.2256.**
+**Next: Phase 5, LightGBM** on C6's features, same walk-forward protocol (settings picked on season S−1), vs C6.
 
 Phase 2 summary below.
 
@@ -47,7 +49,7 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
 2. [x] **Explore + define target**: explore QB dropbacks; pin down next-week EPA/dropback.
 3. [x] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
-4. [ ] **Features + Ridge**: engineered features (no leakage), Ridge regression.
+4. [x] **Features + Ridge**: engineered features (no leakage), Ridge regression.
 5. [ ] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.
 6. [ ] **FastAPI backend**: serve ratings, player history, experiments (api/).
 7. [ ] **React frontend**: weekly rankings, player pages, Model Lab page showing every

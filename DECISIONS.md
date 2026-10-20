@@ -313,3 +313,20 @@ carry-over's errors and with C4's; raw EPA/dropback is +0.056 at home vs +0.054 
 −0.0035 and +0.012 across folds. Winning 4 of 6 seasons by ~0.0001 doesn't matter when the pooled bootstrap says it
 usually loses. Reading: home field in the NFL is worth ~1.5 points a game at most, and passing EPA per dropback
 barely shows it (likely more in run game, penalties, and kicking). Current best stays C6, 0.2256.
+
+**Phase 4 final model: Ridge tested, plain linear kept (Ridge pooled 0.2257 vs 0.2256, win 17.9%, 5/6 seasons).**
+Ridge = linear regression plus a penalty on big weights (alpha). Features are scaled to mean 0, SD 1 first
+(`make_ridge()`), so the penalty treats dropbacks (~500) and sack rate (~0.06) fairly. Alpha can't be picked by
+in-sample fit (that always picks alpha ≈ 0), so walk-forward got a general hook: `Experiment.make_model` and
+`param_grid`, picked inside each fold by training on seasons < S−1 and scoring S−1. The fold's own season never
+helps pick it (tested). Feature K values are still picked as before (linear, in-sample), so the only change is the model.
+Result: five seasons are ties (≤ +0.0002), and 2019 loses 0.0011: with only 2016-2017 to train and 2018 to judge,
+it picked the biggest penalty. With six features and ~4,000 rows, a plain linear model isn't overfitting, so a
+penalty has nothing to fix. Alpha hit the top of the grid in 2 folds. A bigger alpha moves toward the constant-shift
+control (0.2286), so it wasn't widened.
+Useful side result, the 2024-fold Ridge weights per SD of each feature (how much each one moves the adjustment):
+opponent defense 0.030, last-season dropbacks 0.026, sack rate 0.011, this-season dropbacks 0.007, this-season
+average 0.007, last-season average 0.006. Carry-over already holds the averages, so the adjustment is mostly
+"who's the opponent" and "how much did he play".
+**Final Phase 4 model: C6 = carry-over + linear adjustment on [std_avg, std_dropbacks, last_avg, last_dropbacks,
+def_shrunk, sack_carry], pooled walk-forward MAE 0.2256** (league average 0.2367, carry-over 0.2287).

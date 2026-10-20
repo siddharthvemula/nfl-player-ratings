@@ -14,6 +14,7 @@ from typing import Callable
 
 import polars as pl
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
 
 from src.features.target import FIRST_TARGET_SEASON, TARGET_COL, WEIGHT_COL, check_no_leakage
 from src.models.baselines import carry_over, league_average
@@ -33,6 +34,9 @@ class Experiment:
     build(games, targets, league_avg, k) must return targets plus feature_cols, using weeks < N only.
     k_grid: candidate K values, picked inside each fold on its earlier seasons (None = no K).
     league_average_only: the naive baseline; every row gets the fold's league average (no features).
+    make_model(param) -> an unfitted model for the adjustment (None = plain LinearRegression).
+    param_grid: candidate settings for make_model (e.g. Ridge's alpha), picked inside each fold by
+      training on seasons < S-1 and scoring season S-1 (in-sample fit would always pick the most flexible one).
     """
 
     name: str
@@ -40,18 +44,39 @@ class Experiment:
     build: Callable | None = None
     k_grid: tuple = (None,)
     league_average_only: bool = False
+    make_model: Callable | None = None
+    param_grid: tuple = (None,)
 
 
-def fit_residual(train: pl.DataFrame, feature_cols: list[str]) -> LinearRegression:
-    """Fit the adjustment: (target - carry_over) = w0 + w1*f1 + ..., weighted by dropbacks."""
+def fit_residual(train: pl.DataFrame, feature_cols: list[str], model=None):
+    """Fit the adjustment: (target - carry_over) = w0 + w1*f1 + ..., weighted by dropbacks.
+
+    model: any unfitted sklearn-style regressor (default LinearRegression). For a Pipeline
+    (e.g. scaler + Ridge), the dropback weights go to its last step.
+    """
     check_no_leakage(feature_cols)
+    model = LinearRegression() if model is None else model
     residual = (train[TARGET_COL] - train[BASE_COL]).to_numpy()
-    model = LinearRegression()
-    model.fit(train.select(feature_cols).to_numpy(), residual, sample_weight=train[WEIGHT_COL].to_numpy())
+    weights = train[WEIGHT_COL].to_numpy()
+    if isinstance(model, Pipeline):
+        model.fit(train.select(feature_cols).to_numpy(), residual, **{f"{model.steps[-1][0]}__sample_weight": weights})
+    else:
+        model.fit(train.select(feature_cols).to_numpy(), residual, sample_weight=weights)
     return model
 
 
-def predict_residual(model: LinearRegression, df: pl.DataFrame, feature_cols: list[str]) -> pl.DataFrame:
+def pick_param(feats: pl.DataFrame, season: int, exp: Experiment):
+    """The make_model setting that scores best on season - 1 when trained on the seasons before it."""
+    inner_train = feats.filter(pl.col("season") < season - 1)
+    inner_val = feats.filter(pl.col("season") == season - 1)
+    scores = {}
+    for param in exp.param_grid:
+        model = fit_residual(inner_train, exp.feature_cols, exp.make_model(param))
+        scores[param] = mae(predict_residual(model, inner_val, exp.feature_cols))["weighted"]
+    return min(scores, key=scores.get)
+
+
+def predict_residual(model, df: pl.DataFrame, feature_cols: list[str]) -> pl.DataFrame:
     """prediction = carry_over (weight fixed at 1) + the learned adjustment."""
     adjustment = model.predict(df.select(feature_cols).to_numpy())
     return df.with_columns((pl.col(BASE_COL) + pl.Series(adjustment)).alias("prediction"))
@@ -94,6 +119,12 @@ def run_fold(games: pl.DataFrame, targets: pl.DataFrame, season: int, exp: Exper
             best = (score, k, model, feats)
     _, k, model, feats = best
     picked |= {"feature_k": k, "intercept": float(model.intercept_), "weights": dict(zip(exp.feature_cols, model.coef_.round(4)))}
+
+    # Step 3b (optional): swap in a different model on the same features, its setting picked on season - 1.
+    if exp.make_model is not None:
+        param = pick_param(feats, season, exp)
+        model = fit_residual(feats.filter(pl.col("season") < season), exp.feature_cols, exp.make_model(param))
+        picked |= {"param": param, "model": model}
 
     # Step 4: predict the held-out season.
     return predict_residual(model, feats.filter(pl.col("season") == season), exp.feature_cols), picked

@@ -78,3 +78,21 @@ def test_league_average_baseline_uses_earlier_seasons_only():
         expected = league_average(targets.filter(pl.col("season").is_between(2016, s - 1)))
         assert abs(p["league_avg"] - expected) < 1e-12
         assert (pooled.filter(pl.col("season") == s)["prediction"] == expected).all()
+
+
+def test_swapped_model_picks_its_setting_without_the_scored_season():
+    from src.features.history import BASE_FEATURES, base_features
+    from src.features.target import build_targets
+    from src.models.linear import make_ridge
+    from src.models.walk_forward import Experiment, walk_forward
+
+    exp = Experiment("ridge", BASE_FEATURES, lambda g, t, la, k: base_features(g, t, la),
+                     make_model=make_ridge, param_grid=(0.1, 1000))
+    games = _history()
+    pooled, picks = walk_forward(games, build_targets(games), exp)
+    # Wildly change 2024: the 2019-2023 folds (settings and predictions) must not move.
+    changed = _shifted(games, 2024, 50.0)
+    pooled2, picks2 = walk_forward(changed, build_targets(changed), exp)
+    assert [p["param"] for p in picks[:-1]] == [p["param"] for p in picks2[:-1]]
+    early = lambda p: p.filter(pl.col("season") < 2024).sort("season", "week", "passer_id")["prediction"]
+    assert (early(pooled) - early(pooled2)).abs().max() < 1e-12
