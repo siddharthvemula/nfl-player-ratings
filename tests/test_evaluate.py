@@ -50,3 +50,17 @@ def test_season_to_date_uses_only_earlier_games_and_falls_back():
     assert abs(p[0] - 0.05) < 1e-9                    # first game: fallback
     assert abs(p[1] - (1.0 - 4.0) / (10 + 2)) < 1e-9  # weeks 1-2 only
     assert abs(p[2] - 0.05) < 1e-9                    # 2025 week 1: fallback again
+
+
+def test_shrinkage_blends_toward_league_average():
+    from src.features.target import build_targets
+    from src.models.baselines import shrunk_to_date
+
+    games = pl.DataFrame([
+        _game("qb", 1, 50, -10.0),  # -0.2 per dropback
+        _game("qb", 2, 40, 4.0),
+    ]).with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    preds = shrunk_to_date(games, build_targets(games), league_avg=0.05, k=200).sort("week")
+    p = preds["prediction"].to_list()
+    assert abs(p[0] - 0.05) < 1e-9                             # no history: pure league average
+    assert abs(p[1] - (-10.0 + 200 * 0.05) / (50 + 200)) < 1e-9  # 50 real + 200 imaginary dropbacks

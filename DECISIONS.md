@@ -132,3 +132,11 @@ On train, it loses badly with 1–100 dropbacks of history (0.334 vs 0.249), sti
 and only edges ahead after 200+ (0.219 vs 0.225). One or two games of EPA are mostly noise, and a raw
 average trusts them fully. That points to blending a QB's own average with the league average,
 trusting his own more as dropbacks pile up (shrinkage), as the next baseline.
+
+**Shrinkage baseline: K = 250, chosen on train only (val 0.233, best so far).**
+Prediction = (his EPA so far + K × league average) / (his dropbacks so far + K), same season,
+weeks < N only. K was picked from a grid by train weighted MAE; picking it on val would let 2024 tune
+the model. The train curve is flat from about 150 to 400 (0.2284–0.2288), so the exact K barely matters.
+It's the first baseline to beat the league average, and on val it wins in every history bucket.
+The 2024 weighted MAE to beat is now 0.233. The biggest remaining errors are week-1 games (no history,
+val MAE 0.299), which a QB's previous season could fix.

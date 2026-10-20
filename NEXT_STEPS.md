@@ -4,7 +4,8 @@
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
 - Concept 2 done: season-to-date average: val 0.259 / 0.290, *worse* than league average (small samples are noise).
-**Next: Concept 3**, shrinkage: blend each QB's own average toward the league average, trusting his own more as dropbacks pile up.
+- Concept 3 done: shrinkage (K=250, picked on train): val 0.233 / 0.263, best baseline so far.
+**Next: Concept 4**, carry over last season: shrink toward the QB's previous season instead of the league average (fixes week-1 rows).
 
 Phase 2 summary below.
 

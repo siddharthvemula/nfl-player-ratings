@@ -44,3 +44,23 @@ def season_to_date(games: pl.DataFrame, targets: pl.DataFrame, fallback: float) 
             .alias("prediction")
         )
     )
+
+
+def shrunk_to_date(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float, k: float) -> pl.DataFrame:
+    """Season-to-date average blended toward the league average (Phase 3, Concept 3).
+
+    Every QB starts each season with k imaginary dropbacks at league_avg, then his
+    real ones are added: (his EPA so far + k * league_avg) / (his dropbacks so far + k).
+    Few real dropbacks -> close to league_avg; many -> close to his own average.
+    k = 0 is the raw season-to-date average.
+    """
+    # Same running totals as season_to_date (weeks < N only, same season).
+    preds = season_to_date(games, targets, fallback=league_avg).with_columns(
+        pl.col("prior_epa").fill_null(0.0),
+        pl.col("prior_dropbacks").fill_null(0),
+    )
+    if k == 0:
+        return preds
+    return preds.with_columns(
+        ((pl.col("prior_epa") + k * league_avg) / (pl.col("prior_dropbacks") + k)).alias("prediction")
+    )
