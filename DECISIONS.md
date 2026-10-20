@@ -73,3 +73,14 @@ raw-target outliers distort Ridge.
   blanks are sacks (10,389), scrambles (7,006) and passes with no cpoe (5,190). Filling with 0 would
   label them "exactly average accuracy" and pull sack-prone and scrambling QBs toward average.
   Note: `pass_attempt == 1` includes sacks in nflverse, so "pass attempts only" isn't a safe filter.
+
+**Target uses `qb_epa`, not `epa` (Sid's call).**
+The two differ only on a completed catch followed by a lost fumble: 580 of 168,928 train dropbacks
+(0.34%), where `qb_epa` is +4.7 higher on average (Watson 2019 wk 14: −10.8 → +0.52). That changes
+546 of 4,785 QB-games, some a lot (Hurts 2022 wk 10: −0.37 → +0.23), but careers by at most +0.03,
+with no pattern: receiver fumbles are noise the QB can't repeat, so they can't be predicted from his
+past. This is still real, uncapped EPA (consistent with the raw-target decision), chosen once before
+any experiment, so all experiments share one target. Side effects: every value rises slightly (mean
+QB-game +0.028 → +0.043), and our MAE isn't directly comparable to sources that use raw `epa`.
+A QB's own fumbles (e.g. strip-sacks) still count against him in `qb_epa`. Whether *features*
+should use `epa` or `qb_epa` is a separate question, left for Phase 4.
