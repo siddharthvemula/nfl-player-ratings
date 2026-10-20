@@ -15,9 +15,12 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   Fixed weight on last season never fades as this season piles up.
 - Hard keep rule added (DECISIONS.md): bootstrap win >= 80% AND train gain in the same direction.
 - Concept 3 done: handoff pieces (`handoff_features()`): val 0.2322, win 13%. Dropped. Reshuffling this/last-season EPA has run out.
-- Concept 4 done: opponent defense (`defense_features()`, K=200): val 0.2327, win 20%. Dropped by the rule, though it helps
-  in 6 of 8 held-out train seasons. Follow-up idea: fix carry-over's weight at 1, learn only the defense adjustment.
-**Next: Concept 5, CPOE** (shrunk by attempts, weeks < N only). Then sack rate, home/away (DECISIONS.md "Phase 4 feature plan").
+- Concept 4 done (v1): opponent defense (`defense_features()`), dropped on 2024 alone.
+- **Protocol v2** (DECISIONS.md): walk-forward folds 2019-2024, residual on carry-over, keep = pooled win >= 80% AND >= 4/6 seasons.
+  `src/models/walk_forward.py`. Re-run of C1-C4: C1 kept, C2/C3 dropped, C4 kept.
+  **Current best: carry-over + raw features + opponent defense, pooled MAE 0.2260** (carry-over 0.2287).
+- Open: 2016 has no prior season in the data (proposed: load 2015 as history only).
+**Next (waiting on Sid to review the v2 table): Concept 5, CPOE**, on top of the current best. Then sack rate, home/away.
 Ridge once there are enough features for it to matter.
 
 Phase 2 summary below.

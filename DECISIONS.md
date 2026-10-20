@@ -241,3 +241,19 @@ Replaces single-season val scoring and the earlier hard keep rule.
   whether the new feature helped.
 - **2025 is untouched** until the final test in Phase 5: the walk-forward code drops 2025 from both the
   target rows and the history table before anything else runs.
+
+**Protocol v2 re-run of Concepts 1-4 (results).** Current best is now **carry-over + C1 raw features +
+opponent defense, pooled walk-forward MAE 0.2260** (carry-over 0.2287). In order:
+- C1 kept (win 98.9%, 5/6 seasons). It was a tie under v1 because the model re-learned carry-over's scale;
+  as a residual it finds something real: QBs with little or no last season (backups, rookies) come in
+  0.076 EPA/dropback *below* carry-over, because carry-over starts them at the league average. The dropback
+  counts let the adjustment push them down. A constant shift alone (control) doesn't do it: 74% win, and
+  C1 beats the control in 6 of 6 seasons. So volume is information: teams give more snaps to better QBs.
+- C2 and C3 dropped against C1 (0.4% win each): once carry-over is fixed, re-expressing the same two
+  averages only adds noise.
+- C4 kept (C1 + defense vs C1: win 99.8%, 4/6 seasons; the two "losses" are −0.0001 and −0.0002).
+  Under v1 the same feature failed on 2024 alone; the v1 leave-one-season-out check also trained on future
+  seasons, which walk-forward avoids. Learned defense weight is stable across folds (0.41-0.61).
+**Caveat to fix (data):** play-by-play starts in 2016, so every 2016 QB looks like he had no last season.
+That mislabels 2016 veterans as "no history" in the training data of every fold, which blurs C1's
+backup/rookie signal. Proposed fix: load 2015 as history only (never a target row).
