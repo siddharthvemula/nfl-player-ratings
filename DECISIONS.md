@@ -63,3 +63,13 @@ experiments incomparable. The cost is irreducible noise (a future pick-six can't
 Capping is still allowed on *features* (past weeks), where a huge play probably says little about
 the future. Queued as Phase 4 experiments: (1) per-play EPA cap on features, (2) Huber loss if
 raw-target outliers distort Ridge.
+
+**Missing values: check *which* rows are blank before dropping or filling them.**
+- Group by `passer_id` (see above). `passer_player_id` is blank on all 7,006 train scrambles,
+  which average +0.48 EPA vs +0.02 for other dropbacks. Dropping them would have cut
+  Josh Allen from 0.150 to 0.101 EPA/dropback and Justin Fields by 0.10: a bias against mobile QBs.
+- The 11 train dropbacks with no `passer_id` (and 1 with no EPA) are dropped: too few and scattered to bias anyone.
+- `cpoe` is averaged only over rows where it isn't blank, and never filled with 0. Its 22,590 train
+  blanks are sacks (10,389), scrambles (7,006) and passes with no cpoe (5,190). Filling with 0 would
+  label them "exactly average accuracy" and pull sack-prone and scrambling QBs toward average.
+  Note: `pass_attempt == 1` includes sacks in nflverse, so "pass attempts only" isn't a safe filter.

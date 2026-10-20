@@ -1,13 +1,13 @@
 # Next steps
 
 ## Where we left off
-Phase 2 in progress. Concept 1 done: `src/features/qb_games.py` builds one row per passer
-per game (dropbacks, epa_per_db); notebook has a Play cell for it. Exploration uses
-train seasons (2016–2023) only.
-Concept 2 (sample size) covered via the Concept 1 Play cell (min 3 dropbacks + weights).
-Concept 3 (outliers) done: target stays raw; feature cap + Huber queued for Phase 4.
-Concept 4 (missing values) Play cell built: scrambles have blank passer_player_id.
-**Next:** finish Concept 4 (quiz), then 5 epa vs qb_epa, 6 playoffs. Then write the target definition.
+Phase 2, resume at **Concept 5 (epa vs qb_epa)**, then **Concept 6 (playoffs)**, then lock the target.
+
+Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
+- Concept 1: `src/features/qb_games.py` builds one row per passer per game.
+- Concept 2: sample size via min 3 dropbacks + dropback weights.
+- Concept 3: outliers; target stays raw EPA (feature cap + Huber queued for Phase 4).
+- Concept 4: missing values; group by passer_id, cpoe averaged over non-blank rows only.
 
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
