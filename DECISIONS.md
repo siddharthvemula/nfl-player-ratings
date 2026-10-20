@@ -389,3 +389,18 @@ Nothing below changes after the 2025 test runs, whatever it says.
   The final model beat carry-over in 6 of 6 single seasons, by +.0006 (2024) to +.0057 (2019), and the league
   average in 6 of 6 by +.0087 to +.0160. One season is noisy (2024's gain over carry-over was only +.0006), so a
   2025 loss to carry-over is possible and would be reported as is.
+
+**2025 test result (run once, 2026-10-20; nothing changed after).** Final model weighted MAE **0.2382** vs carry-over 0.2431
+and league average 0.2491 (624 QB-games). Final beats carry-over by +0.0049 (bootstrap win 99.3%, 95% range +0.0009 to
++0.0093) and the league average by +0.0109 (win 99.8%). Unweighted: 0.2717 vs 0.2779 vs 0.2858, same order.
+- The gain over carry-over is bigger than walk-forward's pooled +0.0031, and inside its single-season range
+  (+.0006 to +.0057). The gain over the league average (+0.0109) matches walk-forward's (+0.0111).
+- 2025 was harder to predict for everyone (league average 0.249 vs 0.237 pooled), so absolute MAE is higher, but the
+  ranking and the gaps held.
+- Where it comes from (pre-registered split): almost all of it is low-history QBs (186 games: 0.2740 → 0.2559, win
+  99.96%). For veterans, the adjustment is a wash (0.2322 → 0.2319, win 56%). This matches C1's original finding
+  (carry-over starts backups and rookies at the league average, which is too generous), and Sid's LightGBM prediction.
+- Fitted on 2016-2024: defense K 100, sack K 1200, carry K 300; defense weight 0.38 (fold range was 0.35-0.72), sack
+  weight 2.33 (folds 2.3-2.6).
+This is the model's honest score. 2025 is now used up as a test set: any future model change can be judged on
+walk-forward only, and must say so.

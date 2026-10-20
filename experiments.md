@@ -55,3 +55,14 @@ Floor check (at C4): the then-best (C4) beats the league average by 0.0108 poole
 |------|--------|----|-----------|--------|-------|-------------|----------------------------|-----------|
 | 2026-10-20 | LightGBM on C6's features, residual on carry-over (lr 0.03, min 100 games per leaf, 80% subsample; (leaves, trees) picked per fold on season S−1 from {4,8,16}×{100,300,600}: (4,100) ×5, (8,100) in 2022). Hypothesis (Sid: tie): trees can learn interactions (defense matters mostly for veterans), but 4,000 noisy rows limit them | C6 | 0.2254 | 0.2256 | 67.6 | 3/6 | −.0004 −.0007 +.0005 −.0003 +.0009 +.0012 | drop (tie, as Sid predicted). Low-history QBs (last season ≤ 212 db): +.0010, win 83.9%; veterans −.0001, win 39.4% |
 | 2026-10-20 | Reference only (hindsight, not a candidate): LightGBM with (4,100) fixed in every fold | C6 | 0.2252 | 0.2256 | 80.8 | 4/6 | — | not eligible: the setting was chosen after seeing fold scores |
+
+## One-time 2025 test (final model frozen in DECISIONS.md first; trained on 2016-2024; run once, nothing changed after)
+
+| date | model | 2025 MAE (weighted) | 2025 MAE (unweighted) | gain vs carry-over (95% range) | win % vs carry-over | gain vs league avg | win % vs league avg |
+|------|-------|--------------------|-----------------------|-------------------------------|---------------------|--------------------|---------------------|
+| 2026-10-20 | League average (+0.057, fitted on 2016-2024) | 0.2491 | 0.2858 | — | — | — | — |
+| 2026-10-20 | Carry-over (K=300) | 0.2431 | 0.2779 | — | — | +.0060 | 98.5 |
+| 2026-10-20 | **Final: carry-over + linear adjustment on 6 features** (K def 100, sack 1200) | **0.2382** | 0.2717 | +.0049 (+.0009 to +.0093) | 99.3 | +.0109 | 99.8 |
+
+624 QB-games. Pre-registered split: low-history QBs (last season ≤ 212 dropbacks, 186 games) carry-over 0.2740 → final
+0.2559 (win 99.96%); veterans (438 games) 0.2322 → 0.2319 (win 55.7%).

@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 5, final model spec frozen (DECISIONS.md). Next: the one-time 2025 test.
+Where we left off: Phase 5 done (2025 test run once). Next: Phases 6-8 combined plan for Sid's approval.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -39,7 +39,13 @@ Phase 5 started in notebooks/04_lightgbm.ipynb.
 - Smaller LightGBM grid skipped (Sid: it would be shaped by results already seen). **Final model: C6 plain linear.**
 - Concept 2 done: SHAP (`explain()` in `src/models/final.py`), weight × (value − training mean) on top of carry-over.
   Matches `shap.LinearExplainer` to 2e-17 on all 2024 games.
-**Next:** freeze the final model spec in DECISIONS.md (own commit), then the one-time 2025 test. Then Phases 6-8.
+- Final model spec frozen in DECISIONS.md (own commit, before 2025 was computed).
+- **2025 test (run once): final 0.2382 vs carry-over 0.2431 (win 99.3%) vs league average 0.2491 (win 99.8%).**
+  The gain is almost all on low-history QBs (0.2740 → 0.2559); veterans are a wash. Reproduce: `.venv/bin/python -m src.models.final_test`.
+  2025 is now used up as a test set.
+Phase 5 done.
+**Next: Phases 6-8** (FastAPI, React, deploy + weekly refresh): propose one combined plan for Sid's approval. The API serves
+`fit_and_predict()` ratings and `explain()` breakdowns.
 
 Phase 2 summary below.
 
@@ -57,7 +63,7 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 2. [x] **Explore + define target**: explore QB dropbacks; pin down next-week EPA/dropback.
 3. [x] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
 4. [x] **Features + Ridge**: engineered features (no leakage), Ridge regression.
-5. [ ] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.
+5. [x] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.
 6. [ ] **FastAPI backend**: serve ratings, player history, experiments (api/).
 7. [ ] **React frontend**: weekly rankings, player pages, Model Lab page showing every
    experiment and its accuracy (frontend/).
