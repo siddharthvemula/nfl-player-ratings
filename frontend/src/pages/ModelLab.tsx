@@ -1,4 +1,6 @@
 import { Fragment, useState } from "react";
+import { signed } from "../format";
+import { CalibrationPlot } from "../components/CalibrationPlot";
 import { useApi, type ExperimentSection, type Meta } from "../api";
 
 type Filter = "all" | "keep" | "drop";
@@ -137,6 +139,18 @@ export function ModelLab() {
             {t.low_history.carry_over.toFixed(4)} to {t.low_history.final.toFixed(4)}. For veterans ({t.veterans.games} games) it's a wash
             ({t.veterans.carry_over.toFixed(4)} → {t.veterans.final.toFixed(4)}).
           </p>
+          {t.calibration && (
+            <section className="section">
+              <h3 style={{ fontSize: "1.05rem" }}>Do the forecasts mean what they say?</h3>
+              <p className="secondary small" style={{ maxWidth: "85ch", marginBottom: 8 }}>
+                2025 games sorted by forecast and cut into 10 equal groups. A dot on the dashed line means the group did exactly what the model
+                said. The highest-rated group was forecast at {signed(t.calibration[9].predicted)} and delivered {signed(t.calibration[9].actual)}:
+                a little optimistic at the top, as you'd expect from a fitted slope below 1. The whiskers show how far luck alone moves a dot
+                (about ±0.04), so most groups sit on the line within noise.
+              </p>
+              <div className="card"><CalibrationPlot bins={t.calibration} /></div>
+            </section>
+          )}
         </>
       )}
 

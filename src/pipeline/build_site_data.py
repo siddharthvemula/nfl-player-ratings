@@ -20,6 +20,7 @@ import polars as pl
 from src.data.load import FIRST_SEASON, PROJECT_ROOT, load_pbp
 from src.features.qb_games import GAME_KEYS, qb_games
 from src.features.target import TARGET_COL, WEIGHT_COL, build_targets, split_for_season
+from src.models.evaluate import calibration_bins
 from src.models.final import FINAL_FEATURES, check_explanation_adds_up, explain, fit_and_predict
 from src.pipeline.experiments import parse_experiments
 
@@ -278,6 +279,7 @@ def build(refresh: bool = False, out_dir: Path = SITE_DIR) -> dict:
     current = {"season": live_season, "week": int(upcoming["week"].min()), "upcoming": True} if upcoming.height else {
         "season": records[-1]["season"], "week": records[-1]["week"], "upcoming": False}
     played_weeks = rated.filter(pl.col(TARGET_COL).is_not_null()).select("season", "week").unique().sort("season", "week")
+    test_games = test_2025_games(records)
     meta = {
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "live_season": live_season,
@@ -286,10 +288,9 @@ def build(refresh: bool = False, out_dir: Path = SITE_DIR) -> dict:
         "features": FINAL_FEATURES,
         "models": models,
         "confidence_tiers": tier_errors(rated),
-        "test_2025": TEST_2025,
+        "test_2025": {**TEST_2025, "calibration": calibration_bins([g["predicted"] for g in test_games], [g["actual"] for g in test_games], [g["dropbacks"] for g in test_games])},
         "teams": team_info(),
     }
-    test_games = test_2025_games(records)
     experiments = parse_experiments((PROJECT_ROOT / "experiments.md").read_text())
 
     # Nothing new (e.g. the off-season): keep the old timestamp so the files don't change and nothing gets committed.

@@ -488,3 +488,12 @@ about this and was fixed.
 
 **Vercel Web Analytics** (`@vercel/analytics`, page views only, no cookies); it records nothing until it is enabled in
 the Vercel project's Analytics tab.
+
+**Calibration plot on the Model Lab (2025 test games, 10 groups).** Games are sorted by forecast and cut into 10 equal-count
+groups (62-63 games each); each dot is the group's dropback-weighted average forecast vs its weighted average actual, with
+±1 standard error whiskers (about 0.04, so luck alone moves a dot that much). `calibration_bins()` in `src/models/evaluate.py`
+computes it, the pipeline stores it in `meta.test_2025.calibration`, and the plot draws it. Sid predicted the top group would
+sit slightly below the diagonal (too optimistic) because the fitted slope is 0.88, while noting the +0.20 examples averaged
++0.26. Result: top group forecast +0.227, actual +0.175 (below the line, but only ~1.3 standard errors); the second-highest
+(+0.171 vs +0.130) is also below, and the middle groups scatter on both sides, so it's mostly noise around the diagonal with a
+mild optimistic tilt at the top. Descriptive only: it changes no model, rating or score, so it doesn't spend 2025 any further.

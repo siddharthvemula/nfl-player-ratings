@@ -87,6 +87,7 @@ export interface Meta {
     gain_vs_carry_over: { gain: number; low: number; high: number };
     low_history: { games: number; carry_over: number; final: number };
     veterans: { games: number; carry_over: number; final: number };
+    calibration: { bin: number; games: number; predicted: number; actual: number; se: number }[];
   };
   teams: Record<string, { name: string; color: string; color2: string }>;
 }

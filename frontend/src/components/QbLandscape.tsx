@@ -11,11 +11,12 @@ const MAX_R = 15;
 const SOLID_EVIDENCE = 30; // QBs with fewer dropbacks this season don't stretch the x-axis (they're pinned to its edge)
 
 /** Measure an element's width (charts redraw to fit; no fixed pixel sizes). */
-function useWidth<T extends HTMLElement>() {
+export function useWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [width, setWidth] = useState(720);
   useEffect(() => {
     if (!ref.current) return;
+    setWidth(Math.round(ref.current.clientWidth) || 720); // measure now; the observer below keeps it current
     const ro = new ResizeObserver(([e]) => setWidth(Math.round(e.contentRect.width)));
     ro.observe(ref.current);
     return () => ro.disconnect();

@@ -59,3 +59,27 @@ def bootstrap_compare(
         "low": float(np.percentile(gains, 2.5)),
         "high": float(np.percentile(gains, 97.5)),
     }
+
+
+def calibration_bins(predicted, actual, weight, n_bins: int = 10) -> list[dict]:
+    """Do forecasts mean what they say? Sort games by forecast, cut into equal-count groups, compare each group's
+    average forecast with what really happened. A calibrated model lands on the diagonal (forecast = actual).
+
+    Averages are dropback-weighted, like the official score. `se` is the standard error of the group's weighted
+    actual average, so the plot can show how much a group's dot could move by luck alone.
+    """
+    import numpy as np
+
+    p, a, w = (np.asarray(x, dtype=float) for x in (predicted, actual, weight))
+    # Step 1: lowest forecasts first, then split into groups of (almost) equal size.
+    order = np.argsort(p, kind="stable")
+    out = []
+    for k, idx in enumerate(np.array_split(order, n_bins)):
+        # Step 2: what the model said vs what happened, averaged over the group (a long game counts more).
+        mean_p = np.average(p[idx], weights=w[idx])
+        mean_a = np.average(a[idx], weights=w[idx])
+        # Step 3: how much luck alone could move mean_a (weighted standard error).
+        se = np.sqrt(np.sum((w[idx] * (a[idx] - mean_a)) ** 2)) / w[idx].sum()
+        out.append({"bin": k + 1, "games": len(idx), "predicted": round(float(mean_p), 4),
+                    "actual": round(float(mean_a), 4), "se": round(float(se), 4)})
+    return out

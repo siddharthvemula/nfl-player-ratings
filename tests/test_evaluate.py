@@ -100,3 +100,16 @@ def test_bootstrap_compare():
 
     # Same predictions -> never a win.
     assert bootstrap_compare(df, "pa", "pa", n_boot=200)["win_rate"] == 0.0
+
+
+def test_calibration_bins_group_by_forecast_and_weight_by_dropbacks():
+    from src.models.evaluate import calibration_bins
+
+    # Four games, two groups. Low group: forecasts 0.0/0.1, actuals 0.0/0.3 with weights 30/10.
+    # High group: forecasts 0.2/0.3, actuals 0.5/0.1 with weights 10/10.
+    bins = calibration_bins([0.3, 0.0, 0.2, 0.1], [0.1, 0.0, 0.5, 0.3], [10, 30, 10, 10], n_bins=2)
+    assert [b["games"] for b in bins] == [2, 2]
+    assert abs(bins[0]["predicted"] - (0.0 * 30 + 0.1 * 10) / 40) < 1e-4
+    assert abs(bins[0]["actual"] - (0.0 * 30 + 0.3 * 10) / 40) < 1e-4
+    assert abs(bins[1]["actual"] - 0.3) < 1e-4
+    assert bins[0]["predicted"] < bins[1]["predicted"]

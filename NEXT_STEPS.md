@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phases 6-8 (plan approved). Phases 6-8 built. Waiting on Sid's one-time Vercel import; then add the live URL to README.
+Where we left off: Phases 6-8 (plan approved). Phases 6-8 built. Frontend redesign finished (calibration plot was the last build item). Left for Sid: the two checklist items below (gh auth + weekly workflow run, Vercel Analytics).
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -56,7 +56,7 @@ Frontend redesign (approved 2026-10-20), one commit per page:
 - [x] Site data + API: full names, headshots, team colors, raw EPA, previous rank, /api/test-2025.
 - [x] Rankings (QB landscape scatter + week slider, top-3 cards, sortable table), dark theme + light toggle, Vercel Analytics.
 - [x] Player, Players, Method (rating explanation fixed), Model Lab cards.
-- [ ] Model Lab calibration plot (2025, 10 bins): explain + Sid's prediction first (CLAUDE.md, ML work).
+- [x] Model Lab calibration plot (2025, 10 equal-count bins; `calibration_bins()` in evaluate.py; top group forecast +0.227, actual +0.175, below the diagonal as Sid predicted).
 - [ ] Sid: `gh auth login`, then: repo About link, one manual run of the weekly workflow (confirm commit + redeploy).
 - [ ] Sid: enable Web Analytics in the Vercel project (Analytics tab).
 
