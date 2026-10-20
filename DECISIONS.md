@@ -84,3 +84,12 @@ any experiment, so all experiments share one target. Side effects: every value r
 QB-game +0.028 → +0.043), and our MAE isn't directly comparable to sources that use raw `epa`.
 A QB's own fumbles (e.g. strip-sacks) still count against him in `qb_epa`. Whether *features*
 should use `epa` or `qb_epa` is a separate question, left for Phase 4.
+
+**Playoff games are included (Sid's call).**
+Playoff QB-games pool to +0.101 EPA/dropback vs +0.037 in the regular season (train), but that gap
+is selection (only good QBs get there): the same QBs are −0.005 vs their own regular season, so they
+play about the same. Dropping the 199 playoff QB-games would also remove 197 targets, including 109
+regular-season games whose next game was a playoff game. All 109 belong to playoff QBs, so that's
+non-random missing data (like the scrambles in Concept 4) that removes good QBs' late-season examples.
+And the site has to rate QBs during the playoffs anyway. Playoff weeks continue the week numbers
+(18–21 before 2021, 19–22 after), so ordering by (season, week) puts them in sequence.

@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Phase 2, **Concept 6 (playoffs)** cells + Play cell added; waiting on Sid's playoffs call. Then lock the target. When locking it, switch
+Phase 2 concepts done. **Next: Sid reviews the proposed locked target definition**, then we build it. When building, switch
 `qb_games()` to average `qb_epa` (Concept 5 decision; the notebook still uses `epa` until then).
 
 Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
@@ -10,6 +10,7 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 - Concept 3: outliers; target stays raw EPA (feature cap + Huber queued for Phase 4).
 - Concept 4: missing values; group by passer_id, cpoe averaged over non-blank rows only.
 - Concept 5: target uses `qb_epa` (receiver fumbles after the catch aren't on the QB).
+- Concept 6: playoff games included (same QBs play about the same; dropping them is a biased hole).
 
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
