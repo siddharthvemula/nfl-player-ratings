@@ -22,3 +22,13 @@ def test_defense_uses_only_earlier_weeks_and_shrinks():
     assert abs(get("a") - 0.05) < 1e-9                              # week 1: nothing yet, league average
     assert abs(get("c") - (-8.0 + 1.0 + 100 * 0.05) / (50 + 100)) < 1e-9  # week 1 only, shrunk
     assert abs(get("d") - 0.05) < 1e-9                              # CAR had no earlier games
+
+
+def test_home_flag_attaches_to_the_predicted_game():
+    from src.features.opponent import home_features
+    from src.features.target import build_targets
+
+    games = pl.DataFrame([{**_game("a", 1, 30, 3.0), "home": 1}, {**_game("b", 1, 30, 3.0), "home": -1}])
+    games = games.with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    f = home_features(games, build_targets(games))
+    assert f.sort("passer_id")["home"].to_list() == [1, -1]

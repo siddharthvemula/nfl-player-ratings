@@ -46,3 +46,13 @@ def defense_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: flo
         )
         .drop("def_epa_before")
     )
+
+
+# Concept 7: where the game is played. Like the opponent, it's on the schedule before kickoff.
+HOME_FEATURES = ["home"]
+
+
+def home_features(games: pl.DataFrame, targets: pl.DataFrame) -> pl.DataFrame:
+    """Add home = +1 (home), -1 (away), 0 (neutral site) for the game being predicted."""
+    check_no_leakage(HOME_FEATURES)
+    return targets.join(games.select("passer_id", "season", "week", "home"), on=["passer_id", "season", "week"], how="left")

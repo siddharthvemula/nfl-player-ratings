@@ -8,7 +8,7 @@ def _play(passer_id, epa, qb_dropback=1, posteam="KC", cpoe=0.0, sack=0.0):
         "season": 2024, "week": 1, "season_type": "REG", "game_id": "2024_01_BAL_KC",
         "posteam": posteam, "defteam": "BAL" if posteam == "KC" else "KC",
         "passer_id": passer_id, "passer": passer_id, "qb_dropback": qb_dropback, "epa": epa, "qb_epa": epa, "cpoe": cpoe,
-        "sack": sack,
+        "sack": sack, "location": "Home", "home_team": "KC",
     }
 
 
@@ -40,7 +40,7 @@ def test_cpoe_skips_blank_throws():
     assert row["cpoe_sum"] == 10.0 and row["cpoe_att"] == 2 and row["dropbacks"] == 3
 
 
-def test_sacks():
+def test_sacks_and_home_flag():
     pbp = pl.DataFrame([
         _play("mahomes", -2.0, sack=1.0),
         _play("mahomes", 0.5),
@@ -48,3 +48,7 @@ def test_sacks():
     ])
     rows = {r["passer_id"]: r for r in qb_games(pbp).to_dicts()}
     assert rows["mahomes"]["sacks"] == 1 and rows["lamar"]["sacks"] == 0
+    assert rows["mahomes"]["home"] == 1  # KC is the home team
+    assert rows["lamar"]["home"] == -1
+    neutral = qb_games(pbp.with_columns(pl.lit("Neutral").alias("location")))
+    assert neutral["home"].to_list() == [0, 0]

@@ -39,6 +39,11 @@ def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
             pl.col("cpoe").is_not_null().sum().alias("cpoe_att"),
             # Sacks (Phase 4, Concept 6): sacks / dropbacks is the QB's sack rate.
             pl.col("sack").fill_null(0).sum().alias("sacks"),
+            # Home field (Phase 4, Concept 7): +1 home, -1 away, 0 neutral site (London, Super Bowl).
+            # Known from the schedule before kickoff, so it's safe as a feature.
+            pl.when(pl.col("location") == "Neutral").then(0)
+            .when(pl.col("posteam") == pl.col("home_team")).then(1)
+            .otherwise(-1).first().alias("home"),
         )
         .sort(["season", "week", "game_id", "posteam", "dropbacks"], descending=[False, False, False, False, True])
     )

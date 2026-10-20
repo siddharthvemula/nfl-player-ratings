@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 4, Concept 7 (home/away). C6 sack rate kept (pooled 0.2256).
+Where we left off: Phase 4, final Ridge fit with all kept features (C1 + C4 + C6).
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -29,7 +29,8 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   carry-over (corr 0.72), and its weight comes out negative. **Current best still C4, 0.2259.**
 - Concept 6 done: sack rate (`sack_features()`), pooled 0.2256 vs 0.2259, win 93.2%, 4/6. **Kept: current best.**
   Weight is positive: carry-over over-punishes sacks, which repeat less than the rest of EPA.
-**Next: Concept 7, home/away**, then the final Phase 4 Ridge fit with all kept features.
+- Concept 7 done: home/away (`home_features()`), win 17.6%, dropped. Raw home edge is only +0.002 EPA/dropback.
+**Next: final Phase 4 Ridge fit** on the kept features (C1 raw + opponent defense + sack rate).
 
 Phase 2 summary below.
 

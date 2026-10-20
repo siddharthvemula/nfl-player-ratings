@@ -18,7 +18,7 @@ def _play(passer_id, qb_epa, season=2024, week=1, season_type="REG", epa=None):
         "game_id": f"{season}_{week:02d}_BAL_KC", "posteam": "KC", "defteam": "BAL",
         "passer_id": passer_id, "passer": passer_id, "qb_dropback": 1,
         "qb_epa": qb_epa, "epa": qb_epa if epa is None else epa, "cpoe": 0.0,
-        "sack": 0.0,
+        "sack": 0.0, "location": "Home", "home_team": "KC",
     }
 
 

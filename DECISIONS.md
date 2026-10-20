@@ -305,3 +305,11 @@ script all feed them). So carry-over over-punishes them, and this feature gives 
 in weeks 1-4 (+.0005), when last season's sacks dominate carry-over.
 Caveat: the first fold (2019, trained on 2016-2018 only) picked K=50 and a weight near 0, so the signal needs a few
 seasons of data to show. The keep rule passes anyway.
+
+**Phase 4, Concept 7: home/away dropped (pooled 0.2257 vs 0.2256, win 17.6%, 4/6 seasons).**
+`home_features()`: +1 home, −1 away, 0 neutral site (London, Super Bowl), from the play-by-play's `location` and
+`home_team`. It's on the schedule, so it's known before kickoff. Pre-check (2016-2023 only): correlation 0.00 with
+carry-over's errors and with C4's; raw EPA/dropback is +0.056 at home vs +0.054 away. Learned weights wander between
+−0.0035 and +0.012 across folds. Winning 4 of 6 seasons by ~0.0001 doesn't matter when the pooled bootstrap says it
+usually loses. Reading: home field in the NFL is worth ~1.5 points a game at most, and passing EPA per dropback
+barely shows it (likely more in run game, penalties, and kicking). Current best stays C6, 0.2256.
