@@ -56,3 +56,24 @@ def test_shrunk_features_blend_toward_league_average():
     assert abs(wk1["std_shrunk"] - 0.05) < 1e-9                                # no games yet: league average
     assert abs(wk2["std_shrunk"] - (-10.0 + 250 * 0.05) / (50 + 250)) < 1e-9
     assert abs(wk2["last_shrunk"] - (100.0 + 250 * 0.05) / (500 + 250)) < 1e-9
+
+
+def test_handoff_pieces_add_up_to_carry_over():
+    from src.features.history import handoff_features
+    from src.features.target import build_targets
+    from src.models.baselines import carry_over
+
+    games = pl.DataFrame([
+        _game("vet", 1, 500, 100.0, season=2023),
+        _game("vet", 1, 40, -4.0),
+        _game("vet", 2, 40, 0.0),
+        _game("rookie", 1, 40, 0.0),
+        _game("rookie", 2, 30, 6.0),
+    ]).with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    targets = build_targets(games)
+    key = ["passer_id", "season", "week"]
+    f = handoff_features(games, targets, league_avg=0.05, k=300).join(
+        carry_over(games, targets, league_avg=0.05, k=300).select(*key, "prediction"), on=key)
+    assert ((f["last_piece"] + f["this_piece"] - f["prediction"]).abs() < 1e-12).all()
+    wk1 = f.filter(pl.col("passer_id") == "vet", pl.col("season") == 2024, pl.col("week") == 1)
+    assert abs(wk1["this_piece"][0]) < 1e-12  # week 1: dimmer is 1, all last season

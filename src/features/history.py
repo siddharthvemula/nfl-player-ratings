@@ -84,3 +84,26 @@ def shrunk_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: floa
         shrink("std_avg", "std_dropbacks").alias("std_shrunk"),
         shrink("last_avg", "last_dropbacks").alias("last_shrunk"),
     )
+
+
+# Concept 3: carry-over split into two pieces; the "dimmer" fades last season as this season piles up.
+HANDOFF_FEATURES = ["last_piece", "this_piece"]
+HANDOFF_K = 300  # carry-over's K, picked on train in Phase 3, Concept 4
+
+
+def handoff_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float, k: float = HANDOFF_K) -> pl.DataFrame:
+    """base_features() plus carry-over's two pieces, so a linear model can learn the handoff.
+
+    dimmer      = k / (dropbacks so far this season + k)     1 at week 1, shrinking toward 0
+    last_piece  = last season shrunk toward league_avg * dimmer
+    this_piece  = this season's average * (1 - dimmer)
+    last_piece + this_piece is exactly carry_over(k) (weights 1 and 1).
+    """
+    check_no_leakage(HANDOFF_FEATURES)
+    feats = base_features(games, targets, league_avg)
+    start = (pl.col("last_avg") * pl.col("last_dropbacks") + k * league_avg) / (pl.col("last_dropbacks") + k)
+    dimmer = k / (pl.col("std_dropbacks") + k)
+    return feats.with_columns(
+        (start * dimmer).alias("last_piece"),
+        (pl.col("std_avg") * (1 - dimmer)).alias("this_piece"),
+    )

@@ -191,3 +191,23 @@ talk yourself into a lucky number. A fixed rule, set before seeing the next resu
 temptation. Requiring train to agree guards against a change that happens to suit 2024's QBs.
 Not retroactive: carry-over (val 0.2312) stays the current best. Concept 1's linear model (win 54.5%)
 was kept only as a code base for later features, never as the new best.
+
+**Phase 4, Concept 3: handoff pieces tie carry-over on train, lose on val (0.2322 vs 0.2312, win 13%). Dropped.**
+Carry-over split exactly into last_piece + this_piece (dimmer = 300 / (dropbacks so far + 300)). The model
+learned 0.83 and 1.03 (carry-over is 1 and 1) with intercept −0.015: it trims last season a bit. That helped
+train by 0.0001 and hurt 2024 by 0.001. Reshuffling the same two numbers has run out: three linear
+variants (Concepts 1-3) all land within ±0.002 of carry-over. Part of the gap may be that linear regression
+minimizes squared error while we score absolute error (Huber is still queued).
+
+**Phase 4 feature plan (decided 2026-10-20): new information, not reshuffled EPA.** In order:
+1. Opponent defense strength (the only feature about the game being predicted)
+2. CPOE (stabilizes faster than EPA; should help early weeks)
+3. Sack rate (QB-owned, fast to stabilize, overlaps EPA)
+4. Home/away (known ahead of time, small effect; neutral sites need their own value)
+Requirements for every new feature, learned from Concepts 1-3:
+- **Shrink by sample size**: e.g. a defense's EPA allowed so far is pulled toward the league average
+  when it has played few games, the way std_shrunk is. A linear model can't learn "trust grows with
+  sample size" on its own (Concept 1).
+- **Only games before week N** (same as all features). Schedule facts known before kickoff (who the
+  opponent is, home/away) are allowed; anything measured in the target game is not.
+Each feature is one experiment and one commit, judged by the hard keep rule against the current best.

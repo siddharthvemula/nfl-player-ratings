@@ -13,7 +13,10 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   Fixed weights can't trust this season more as dropbacks pile up.
 - Concept 2 done: pre-shrunk features (`shrunk_features()`): val 0.2328, *worse* than carry-over (win 5%). Dropped.
   Fixed weight on last season never fades as this season piles up.
-**Next: Concept 3**: give the model the handoff between seasons (e.g. carry-over's own prediction as a feature, or season-share features), then Ridge.
+- Hard keep rule added (DECISIONS.md): bootstrap win >= 80% AND train gain in the same direction.
+- Concept 3 done: handoff pieces (`handoff_features()`): val 0.2322, win 13%. Dropped. Reshuffling this/last-season EPA has run out.
+**Next: Concept 4, opponent defense strength** (shrunk by games played, weeks < N only). Then CPOE, sack rate, home/away
+(see DECISIONS.md "Phase 4 feature plan"). Ridge once there are enough features for it to matter.
 
 Phase 2 summary below.
 
