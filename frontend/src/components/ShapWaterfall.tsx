@@ -21,7 +21,7 @@ export function ShapWaterfall({ game, order }: { game: Rating; order: string[] }
     steps.push({ name, detail, value, from: run, to: run + value, kind: value >= 0 ? "up" : "down" });
     run += value;
   };
-  push("Average adjustment", game.avg_adjustment, "for a typical training game");
+  push("Average adjustment", game.avg_adjustment, "same for every QB this season");
   // Biggest pieces first, so the eye lands on what matters.
   [...order]
     .sort((a, b) => Math.abs(game.contributions[b]) - Math.abs(game.contributions[a]))
@@ -44,6 +44,7 @@ export function ShapWaterfall({ game, order }: { game: Rating; order: string[] }
         const isTotal = i === steps.length - 1;
         return (
           <div key={s.name} role="row" style={{ display: "contents" }}>
+            {isTotal && <div className="divider" aria-hidden="true" />}
             <div role="cell" className={`name ${isTotal ? "total-row" : ""}`}>
               {s.name}
               {s.detail && <small>{s.detail}</small>}
