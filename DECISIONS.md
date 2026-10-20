@@ -124,3 +124,11 @@ so any model that can't beat it (val weighted MAE 0.240, unweighted 0.270) has l
 The number is computed from train only, so nothing from 2024 leaks in. It's weighted because the
 official score is weighted. Scoring lives in `src/models/evaluate.py` (`mae()` returns both MAEs),
 so every experiment is scored the same way.
+
+**Season-to-date baseline: worse than league average (val 0.259 vs 0.240), kept only as a reference.**
+Prediction for week N = the QB's total qb_epa / total dropbacks over his earlier games that season
+(1–2 dropback games included, resets each season, league-average fallback in his first game).
+On train, it loses badly with 1–100 dropbacks of history (0.334 vs 0.249), still loses at 101–200,
+and only edges ahead after 200+ (0.219 vs 0.225). One or two games of EPA are mostly noise, and a raw
+average trusts them fully. That points to blending a QB's own average with the league average,
+trusting his own more as dropbacks pile up (shrinkage), as the next baseline.

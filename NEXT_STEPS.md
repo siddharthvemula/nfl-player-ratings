@@ -3,7 +3,8 @@
 ## Where we left off
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
-**Next: Concept 2**, season-to-date average per QB (with a fallback for rows with no history).
+- Concept 2 done: season-to-date average: val 0.259 / 0.290, *worse* than league average (small samples are noise).
+**Next: Concept 3**, shrinkage: blend each QB's own average toward the league average, trusting his own more as dropbacks pile up.
 
 Phase 2 summary below.
 

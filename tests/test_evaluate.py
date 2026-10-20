@@ -24,3 +24,29 @@ def test_league_average_is_dropback_weighted():
 def test_constant_prediction_fills_every_row():
     preds = predict_constant(_rows([0.1, 0.2, 0.3], [5, 5, 5]), 0.05)
     assert preds["prediction"].to_list() == [0.05, 0.05, 0.05]
+
+
+def _game(passer_id, week, dropbacks, epa_sum, season=2024):
+    return {
+        "season": season, "week": week, "season_type": "REG", "game_id": f"{season}_{week:02d}_{passer_id}",
+        "posteam": "KC", "defteam": "BAL", "passer_id": passer_id, "passer": passer_id,
+        "dropbacks": dropbacks, "epa_sum": epa_sum, "epa_per_db": epa_sum / dropbacks,
+    }
+
+
+def test_season_to_date_uses_only_earlier_games_and_falls_back():
+    from src.features.target import build_targets
+    from src.models.baselines import season_to_date
+
+    games = pl.DataFrame([
+        _game("qb", 1, 10, 1.0),   # +0.1
+        _game("qb", 2, 2, -4.0),   # 2-dropback game: not a target, but counts as history
+        _game("qb", 3, 20, 10.0),  # the game itself must never leak into its own prediction
+        _game("qb", 1, 10, 9.0, season=2025),  # new season: history resets
+    ]).with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    preds = season_to_date(games, build_targets(games), fallback=0.05).sort("season", "week")
+    assert preds["week"].to_list() == [1, 3, 1]
+    p = preds["prediction"].to_list()
+    assert abs(p[0] - 0.05) < 1e-9                    # first game: fallback
+    assert abs(p[1] - (1.0 - 4.0) / (10 + 2)) < 1e-9  # weeks 1-2 only
+    assert abs(p[2] - 0.05) < 1e-9                    # 2025 week 1: fallback again
