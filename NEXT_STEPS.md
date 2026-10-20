@@ -4,7 +4,9 @@
 Phase 2 in progress. Concept 1 done: `src/features/qb_games.py` builds one row per passer
 per game (dropbacks, epa_per_db); notebook has a Play cell for it. Exploration uses
 train seasons (2016–2023) only.
-**Next:** Concept 2 (sample size), then 3 outliers, 4 missing values (passer_player_id is
+Concept 2 (sample size) covered via the Concept 1 Play cell (min 3 dropbacks + weights).
+Concept 3 (outliers) Play cell built: clip per-play EPA; Sid has not decided on a cap yet.
+**Next:** finish Concept 3 (cap decision + quiz), then 4 missing values (passer_player_id is
 null on every scramble), 5 epa vs qb_epa, 6 playoffs. Then write the target definition.
 
 ## Phase plan
