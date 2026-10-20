@@ -7,7 +7,7 @@ def _play(passer_id, epa, qb_dropback=1, posteam="KC"):
     return {
         "season": 2024, "week": 1, "season_type": "REG", "game_id": "2024_01_BAL_KC",
         "posteam": posteam, "defteam": "BAL" if posteam == "KC" else "KC",
-        "passer_id": passer_id, "passer": passer_id, "qb_dropback": qb_dropback, "epa": epa,
+        "passer_id": passer_id, "passer": passer_id, "qb_dropback": qb_dropback, "epa": epa, "qb_epa": epa,
     }
 
 

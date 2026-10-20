@@ -1,8 +1,9 @@
 # Next steps
 
 ## Where we left off
-Phase 2 concepts done. **Next: Sid reviews the proposed locked target definition**, then we build it. When building, switch
-`qb_games()` to average `qb_epa` (Concept 5 decision; the notebook still uses `epa` until then).
+Phase 2 done: the target is locked (`src/features/target.py`; see DECISIONS.md, "Locked target").
+**Next: Phase 3**, starting with the simplest baseline (season-to-date average) and its fallback
+for rows with no history, scored with dropback-weighted + unweighted MAE on 2024 val.
 
 Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DECISIONS.md):
 - Concept 1: `src/features/qb_games.py` builds one row per passer per game.
@@ -11,10 +12,11 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 - Concept 4: missing values; group by passer_id, cpoe averaged over non-blank rows only.
 - Concept 5: target uses `qb_epa` (receiver fumbles after the catch aren't on the QB).
 - Concept 6: playoff games included (same QBs play about the same; dropping them is a biased hole).
+- Locked target: `build_targets(qb_games(pbp))`; history for features = full `qb_games()` table.
 
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.
-2. [ ] **Explore + define target**: explore QB dropbacks; pin down next-week EPA/dropback.
+2. [x] **Explore + define target**: explore QB dropbacks; pin down next-week EPA/dropback.
 3. [ ] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
 4. [ ] **Features + Ridge**: engineered features (no leakage), Ridge regression.
 5. [ ] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.

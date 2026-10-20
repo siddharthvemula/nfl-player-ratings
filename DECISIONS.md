@@ -93,3 +93,25 @@ regular-season games whose next game was a playoff game. All 109 belong to playo
 non-random missing data (like the scrambles in Concept 4) that removes good QBs' late-season examples.
 And the site has to rate QBs during the playoffs anyway. Playoff weeks continue the week numbers
 (18–21 before 2021, 19–22 after), so ordering by (season, week) puts them in sequence.
+
+**Locked target (end of Phase 2; built in `src/features/target.py`).**
+Each row is one QB-game we predict, and its features may only use that QB's earlier games
+(features for week N use weeks < N, where N is the game being predicted).
+- Plays: `qb_dropback == 1` (passes, sacks, scrambles), regular season and playoffs.
+- Grouped by `passer_id`; target = mean `qb_epa` over the QB's dropbacks in that game, uncapped.
+- Target rows need 3+ dropbacks. Games with 1–2 dropbacks aren't targets, but their plays still
+  count in a QB's history when building features (Sid's addition): they're real plays, just too
+  few to score a prediction on.
+- Weight = dropbacks in the target game, used in training and scoring only. It's only known after
+  the game, so it's never a feature: `check_no_leakage()` refuses it (and the other same-game columns)
+  and a test enforces that.
+- Rows with no history (a QB's first game of a season, or in our data) are kept; baselines and
+  models need a fallback for them.
+- We only score games the QB actually played: the rating means "how well he'll play if he plays."
+- Split by the target game's season: train 2016–2023 (4,785 rows), val 2024 (622), test 2025 (624);
+  2026+ is "live" (rated on the site, never scored).
+- Official score: dropback-weighted MAE on val. experiments.md also logs unweighted MAE (Sid's
+  addition), to show whether a change helps across all games or mostly on high-dropback ones.
+Why "row = the game being predicted" rather than "row = game N, target = game N+1": the numbers
+are the same, but no last-game-of-season rows get thrown away (they were just the next season's
+first game), and it matches the leakage rule exactly.

@@ -11,8 +11,13 @@ import polars as pl
 GAME_KEYS = ["season", "week", "season_type", "game_id", "posteam", "defteam"]
 
 
-def qb_games(pbp: pl.DataFrame) -> pl.DataFrame:
-    """Return one row per (game, team, passer) with dropbacks and EPA per dropback."""
+def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
+    """Return one row per (game, team, passer) with dropbacks and EPA per dropback.
+
+    epa_col is the per-play EPA column to average. The default, qb_epa, doesn't
+    charge the QB for a receiver's fumble after the catch (Concept 5). The
+    notebook passes "epa" to reproduce the Phase 2 exploration.
+    """
     return (
         # Step 1: keep only dropbacks (pass attempts, sacks, scrambles).
         pbp.filter(pl.col("qb_dropback") == 1)
@@ -24,9 +29,9 @@ def qb_games(pbp: pl.DataFrame) -> pl.DataFrame:
         .agg(
             pl.col("passer").first(),
             pl.len().alias("dropbacks"),
-            pl.col("epa").sum().alias("epa_sum"),
+            pl.col(epa_col).sum().alias("epa_sum"),
             # mean() skips null EPA, so this is epa_sum / (dropbacks with an EPA).
-            pl.col("epa").mean().alias("epa_per_db"),
+            pl.col(epa_col).mean().alias("epa_per_db"),
         )
         .sort(["season", "week", "game_id", "posteam", "dropbacks"], descending=[False, False, False, False, True])
     )
