@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phases 6-8 (plan approved). Done: data build, FastAPI, React, deploy config. Next: README; then Sid connects Vercel (one-time).
+Where we left off: Phases 6-8 (plan approved). Phases 6-8 built. Waiting on Sid's one-time Vercel import; then add the live URL to README.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -49,7 +49,8 @@ Phases 6-8 plan approved (DECISIONS.md, "Phases 6-8").
 - [x] FastAPI backend: `.venv/bin/uvicorn api.index:app --reload` → http://127.0.0.1:8000/api/docs. Setup: `pip install -r requirements-ml.txt`.
 - [x] React frontend: `cd frontend && npm install && npm run dev` (with uvicorn running) → http://localhost:5173.
 - [x] vercel.json + GitHub Actions (weekly.yml: Tuesdays 14:00 UTC + manual; ci.yml on push). Live once Sid imports the repo on Vercel.
-- [ ] README + resume bullets.
+- [x] README (results, method, limitations, data credit). Resume bullets given in chat.
+- [ ] Sid: import repo on Vercel (Hobby). Then: add live URL to README, verify the site and a manual weekly run.
 
 Phase 2 summary below.
 
@@ -68,7 +69,7 @@ Done so far (notebooks/01_explore.ipynb, train seasons 2016–2023 only; see DEC
 3. [x] **Baseline + evaluation**: simple baselines (e.g. season-to-date average), MAE on 2024 val.
 4. [x] **Features + Ridge**: engineered features (no leakage), Ridge regression.
 5. [x] **LightGBM + SHAP**: gradient-boosted model; SHAP to explain predictions.
-6. [ ] **FastAPI backend**: serve ratings, player history, experiments (api/).
-7. [ ] **React frontend**: weekly rankings, player pages, Model Lab page showing every
+6. [x] **FastAPI backend**: serve ratings, player history, experiments (api/).
+7. [x] **React frontend**: weekly rankings, player pages, Model Lab page showing every
    experiment and its accuracy (frontend/).
 8. [ ] **Deploy + weekly auto-update**: free hosting; scheduled job to refresh data and ratings.
