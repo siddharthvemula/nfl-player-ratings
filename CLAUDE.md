@@ -22,9 +22,13 @@ You build everything, including the ML code. How you do it depends on the kind o
   2. Give a small worked example using real QB numbers from the data.
   3. Ask Sid to predict the result, and wait for the answer.
   4. Build it, with comments explaining each step.
-  5. Afterwards, give a 2-question quiz on what was just done.
+  5. Report the result in chat. No quizzes.
+- Notebooks: keep a Play cell per concept for optional hands-on use, but never require Sid
+  to open a notebook. Everything he needs (numbers, tables, results) goes in the chat reply.
 - Non-ML work (backend, frontend, deployment, automation): just build it and give a
   one-line summary.
+- Phases 6–8 (backend, frontend, deploy): propose one combined plan for Sid's approval, then
+  build, test, and commit end to end. Write the README and resume bullets along the way.
 - Sid is new to Git/tooling: explain commands in plain language.
 
 ## Rules
