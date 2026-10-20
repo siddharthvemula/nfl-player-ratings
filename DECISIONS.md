@@ -140,3 +140,12 @@ the model. The train curve is flat from about 150 to 400 (0.2284–0.2288), so t
 It's the first baseline to beat the league average, and on val it wins in every history bucket.
 The 2024 weighted MAE to beat is now 0.233. The biggest remaining errors are week-1 games (no history,
 val MAE 0.299), which a QB's previous season could fix.
+
+**Carry-over baseline: K = 300, chosen on train (val 0.231, best so far, but only 0.002 better).**
+Each QB's season starts from his previous season, shrunk toward the league average with the same K
+(rookies and QBs with no dropbacks last season start at the league average). Then this season's
+dropbacks pile on as in shrinkage. Train improves by the same small amount (0.2284 → 0.2263), so the
+gain isn't a val fluke, but it's small. On val it helps a lot in week 1 (33 games: 0.235 → 0.213), is
+slightly worse in weeks 2–4, and slightly better after that, since with K = 300 last season still has
+some pull all year. It does nothing for rookies or backups. Kept as the Phase 3 bar to beat.
+Open question for later: whether a 0.002 gain is real or noise.

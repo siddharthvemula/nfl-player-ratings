@@ -64,3 +64,23 @@ def test_shrinkage_blends_toward_league_average():
     p = preds["prediction"].to_list()
     assert abs(p[0] - 0.05) < 1e-9                             # no history: pure league average
     assert abs(p[1] - (-10.0 + 200 * 0.05) / (50 + 200)) < 1e-9  # 50 real + 200 imaginary dropbacks
+
+
+def test_carry_over_starts_from_shrunk_last_season():
+    from src.features.target import build_targets
+    from src.models.baselines import carry_over
+
+    games = pl.DataFrame([
+        _game("vet", 1, 500, 100.0, season=2023),  # +0.2 last season
+        _game("vet", 1, 40, -4.0, season=2024),
+        _game("vet", 2, 40, 0.0, season=2024),
+        _game("rookie", 1, 40, 0.0, season=2024),
+    ]).with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    preds = carry_over(games, build_targets(games), league_avg=0.05, k=250)
+    get = lambda qb, s, w: preds.filter(pl.col("passer_id") == qb, pl.col("season") == s, pl.col("week") == w)["prediction"][0]
+
+    start = (100.0 + 250 * 0.05) / (500 + 250)
+    assert abs(get("vet", 2024, 1) - start) < 1e-9                         # week 1: last season, shrunk
+    assert abs(get("vet", 2024, 2) - (-4.0 + 250 * start) / (40 + 250)) < 1e-9
+    assert abs(get("rookie", 2024, 1) - 0.05) < 1e-9                        # no last season: league average
+    assert abs(get("vet", 2023, 1) - 0.05) < 1e-9                           # first season in data

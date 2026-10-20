@@ -64,3 +64,32 @@ def shrunk_to_date(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float
     return preds.with_columns(
         ((pl.col("prior_epa") + k * league_avg) / (pl.col("prior_dropbacks") + k)).alias("prediction")
     )
+
+
+def carry_over(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float, k: float) -> pl.DataFrame:
+    """Shrinkage that starts each QB from his own previous season (Phase 3, Concept 4).
+
+    Step A: starting point = (last season's EPA + k * league_avg) / (last season's dropbacks + k).
+            No dropbacks last season (rookies, backups who didn't play) -> league_avg.
+    Step B: prediction = (EPA so far this season + k * start) / (dropbacks so far + k).
+    All of last season is before week 1, so this only uses the past.
+    """
+    # Step 1: each QB's full-season totals, relabeled as "last season" for the next year.
+    last = (
+        games.group_by("passer_id", "season")
+        .agg(pl.col("epa_sum").sum().alias("last_epa"), pl.col("dropbacks").sum().alias("last_dropbacks"))
+        .with_columns(pl.col("season") + 1)
+    )
+    preds = (
+        shrunk_to_date(games, targets, league_avg, k)
+        .join(last, on=["passer_id", "season"], how="left")
+        .with_columns(pl.col("last_epa").fill_null(0.0), pl.col("last_dropbacks").fill_null(0))
+        # Step 2 (A): shrink last season toward the league average.
+        .with_columns(((pl.col("last_epa") + k * league_avg) / (pl.col("last_dropbacks") + k)).alias("start"))
+    )
+    if k == 0:
+        return preds
+    # Step 3 (B): this season's dropbacks pile on top of that starting point.
+    return preds.with_columns(
+        ((pl.col("prior_epa") + k * pl.col("start")) / (pl.col("prior_dropbacks") + k)).alias("prediction")
+    )
