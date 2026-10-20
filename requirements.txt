@@ -1,0 +1,10 @@
+nflreadpy
+polars
+pandas
+pyarrow
+scikit-learn
+lightgbm
+shap
+jupyter
+matplotlib
+pytest
