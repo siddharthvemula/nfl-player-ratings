@@ -404,3 +404,26 @@ and league average 0.2491 (624 QB-games). Final beats carry-over by +0.0049 (boo
   weight 2.33 (folds 2.3-2.6).
 This is the model's honest score. 2025 is now used up as a test set: any future model change can be judged on
 walk-forward only, and must say so.
+
+## Phases 6-8: web app (plan approved by Sid 2026-10-20)
+
+**Precomputed ratings, served as JSON (`src/pipeline/build_site_data.py` → `site_data/`).** The API never runs the
+model. A weekly job rebuilds three files: `meta.json` (current week, each season's fitted model, confidence-tier errors,
+the frozen 2025 result), `ratings.json` (every rating since 2019 with its SHAP pieces), and `experiments.json` (parsed
+from experiments.md, which stays the single source of truth). The plan listed one file per player; a single
+`ratings.json` (~2.7 MB) is simpler, and the API indexes it by player at startup.
+- **Every rating is out-of-sample:** season S is rated by a model fitted on seasons < S (`fit_and_predict()`), the same
+  recipe as walk-forward and the 2025 test. History starts at 2019, the first fold. The live season's model is
+  fitted on 2016 through last season.
+- **Next-week ratings use zero-dropback placeholder rows** for each QB's next scheduled game (nflverse schedules).
+  The feature code finds "games before week N" by looking up a row at week N, and an unplayed game has none.
+  Placeholders add 0 to every total, so no played-game rating changes (tested), and they let the QB and the opponent
+  defense stop exactly at week N. A team on a bye gets its next game a week later. With no game left (season over),
+  there's no opponent, so the defense feature falls back to the league average.
+- **Rankings use the opponent-neutral rating (Sid's call):** the same prediction with the defense set to the league
+  average, `rating + w_def × (league_avg − def_shrunk)`. The matchup rating (vs the actual next opponent) is shown
+  next to it. Upcoming games are ranked all together, so bye-week QBs appear in this week's list.
+- **Who's ranked:** every QB with a dropback in the last 2 played weeks (no depth-chart data).
+- **Confidence = dropbacks of evidence** (last season + this season so far): Low < 250, Med 250-600, High ≥ 600. Real
+  error per tier on walk-forward 2019-2024: Low 0.248 (897 games), Med 0.227 (827), High 0.217 (1,958). So the
+  labels track real accuracy. 2025 isn't used for this; it's spent.

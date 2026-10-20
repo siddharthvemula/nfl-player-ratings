@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 5 done (2025 test run once). Next: Phases 6-8 combined plan for Sid's approval.
+Where we left off: Phases 6-8 (plan approved). Done: weekly data build. Next: FastAPI, React, deploy, README.
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -44,8 +44,12 @@ Phase 5 started in notebooks/04_lightgbm.ipynb.
   The gain is almost all on low-history QBs (0.2740 → 0.2559); veterans are a wash. Reproduce: `.venv/bin/python -m src.models.final_test`.
   2025 is now used up as a test set.
 Phase 5 done.
-**Next: Phases 6-8** (FastAPI, React, deploy + weekly refresh): propose one combined plan for Sid's approval. The API serves
-`fit_and_predict()` ratings and `explain()` breakdowns.
+Phases 6-8 plan approved (DECISIONS.md, "Phases 6-8").
+- [x] Weekly data build: `.venv/bin/python -m src.pipeline.build_site_data [--refresh]` → site_data/ (meta, ratings, experiments).
+- [ ] FastAPI backend (api/index.py) serving site_data/.
+- [ ] React frontend (frontend/): rankings, player pages, Model Lab, method.
+- [ ] Vercel (Hobby) + GitHub Actions: weekly refresh every Tuesday, CI on push.
+- [ ] README + resume bullets.
 
 Phase 2 summary below.
 
