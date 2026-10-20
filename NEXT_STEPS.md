@@ -1,10 +1,11 @@
 # Next steps
 
 ## Where we left off
-Phase 1 is done: 2016–2026 play-by-play is cached in data/raw/, and
-notebooks/01_explore.ipynb loads it and filters to QB dropbacks.
-**Next:** Phase 2. Sid explores the notebook; then we define the target precisely
-(e.g. minimum dropbacks per week, regular season only?, EPA vs qb_epa).
+Phase 2 in progress. Concept 1 done: `src/features/qb_games.py` builds one row per passer
+per game (dropbacks, epa_per_db); notebook has a Play cell for it. Exploration uses
+train seasons (2016–2023) only.
+**Next:** Concept 2 (sample size), then 3 outliers, 4 missing values (passer_player_id is
+null on every scramble), 5 epa vs qb_epa, 6 playoffs. Then write the target definition.
 
 ## Phase plan
 1. [x] **Data**: download + cache play-by-play with nflreadpy.

@@ -33,3 +33,17 @@ nflreadpy needs 3.10+; the system Python is 3.9.
 **FastAPI backend + React frontend, free hosting only.**
 This is the typical shape of an ML web app: Python serves predictions, and JavaScript
 renders the UI. Paid hosting is ruled out; the specific free hosts get chosen in Phase 8.
+
+## Phase 2: Explore + define target
+
+**Explore on train seasons (2016–2023) only.**
+Choosing the target definition (dropback minimums, playoffs, etc.) while looking at 2024–2025
+would let the val/test seasons shape the model, so their scores would no longer be honest.
+
+**Group by `passer_id`, not `passer_player_id`.**
+`passer_player_id` is null on every QB scramble (9,288 in 2016–2025), so grouping on it would
+silently drop scrambles from each QB's dropbacks. `passer_id` covers passes, sacks and scrambles.
+
+**QB-game table keeps every passer for now.**
+There are 1.23 QB-game rows per team-game in train: backups, plus trick-play passers (Taysom Hill,
+punters, receivers). Filtering them out is a sample-size decision, made in Concept 2.
