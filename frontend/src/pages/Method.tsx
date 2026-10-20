@@ -1,20 +1,30 @@
 import { useApi, type Meta } from "../api";
-import { FEATURE_LABELS } from "../format";
+import { FEATURE_LABELS, signed, TYPICAL_DROPBACKS } from "../format";
 
 export function Method() {
   const meta = useApi<Meta>("/api/meta");
   const model = meta.data?.models[meta.data.models.length - 1];
+  const avg = model?.league_avg;
   return (
-    <>
+    <div className="prose">
+      <div className="eyebrow">Method</div>
       <h1>How the ratings work</h1>
 
       <h2>What a rating is</h2>
       <p>
         A QB's rating is a forecast: his <strong>EPA per dropback</strong> in his next game. EPA (expected points added) measures how much
         each play changed his team's expected score, so a 3rd-and-15 conversion counts for more than a garbage-time checkdown.
-        Dropbacks include passes, sacks and scrambles. A rating of +0.10 means "about a tenth of a point better than an average
-        dropback, every dropback." League average is about +0.06.
+        Dropbacks include passes, sacks and scrambles.
       </p>
+      <div className="explain" style={{ marginBottom: 16 }}>
+        <span className="i" aria-hidden="true">i</span>
+        <span>
+          <strong>Reading the number.</strong> A rating of +0.24 means he's expected to add 0.24 points to his team's expected score on
+          each dropback. Zero is <em>not</em> average: the average QB adds about {avg ? signed(avg, 2) : "+0.06"} per dropback, so +0.24 is
+          about {avg ? (0.24 - avg).toFixed(2) : "0.18"} better than average. Over a typical {TYPICAL_DROPBACKS}-dropback game, that's
+          roughly {avg ? ((0.24 - avg) * TYPICAL_DROPBACKS).toFixed(1) : "6.5"} more points than an average QB would produce.
+        </span>
+      </div>
       <p>Because a rating is a forecast, it can be checked: after each game, the site shows what the QB actually did.</p>
 
       <h2>How it's made</h2>
@@ -24,7 +34,7 @@ export function Method() {
           dropbacks. As this season's dropbacks pile up, they take over. This alone beats "league average for everyone."
         </li>
         <li>
-          <strong>A learned adjustment</strong> on top, from six features: {Object.values(FEATURE_LABELS).join(", ").toLowerCase()}.
+          <strong>A learned adjustment</strong> on top, from six features: {Object.values(FEATURE_LABELS).map((l) => l[0].toLowerCase() + l.slice(1)).join(", ")}.
           It's a weighted sum, so every rating splits exactly into one piece per feature (the breakdown on each player page).
         </li>
         <li>
@@ -49,7 +59,7 @@ export function Method() {
         <>
           <h2>The current model ({model.season})</h2>
           <p className="secondary">Trained on {model.trained_on}. Weight per unit of each feature (applied to his value minus the training average):</p>
-          <div className="table-wrap">
+          <div className="table-wrap" style={{ maxWidth: 560 }}>
             <table>
               <thead><tr><th>Feature</th><th className="num">Weight</th><th className="num">Training average</th></tr></thead>
               <tbody>
@@ -75,6 +85,6 @@ export function Method() {
       <p>
         Data: <a href="https://github.com/nflverse">nflverse</a> / nflfastR (CC-BY 4.0), via nflreadpy. Ratings are recomputed every Tuesday.
       </p>
-    </>
+    </div>
   );
 }
