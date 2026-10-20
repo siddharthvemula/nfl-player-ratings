@@ -37,6 +37,8 @@ def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
             # so blanks are never treated as "exactly average accuracy" (0).
             pl.col("cpoe").sum().alias("cpoe_sum"),
             pl.col("cpoe").is_not_null().sum().alias("cpoe_att"),
+            # Sacks (Phase 4, Concept 6): sacks / dropbacks is the QB's sack rate.
+            pl.col("sack").fill_null(0).sum().alias("sacks"),
         )
         .sort(["season", "week", "game_id", "posteam", "dropbacks"], descending=[False, False, False, False, True])
     )

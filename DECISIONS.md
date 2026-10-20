@@ -290,3 +290,18 @@ EPA already includes completions, and carry-over's last season covers the early 
 historical seasons that may include fold seasons. The same is true of the EP model behind EPA, which the
 target and every feature already use. It's a small, shared risk, not specific to this feature.
 Current best is unchanged: C4, 0.2259.
+
+**Phase 4, Concept 6: sack rate kept (pooled 0.2256 vs 0.2259, win 93.2%, 4/6 seasons). New current best.**
+`sack_features()`: carry-over's recipe on sacks per dropback. Each QB starts from last season's sack rate, shrunk
+toward the league rate, then this season's dropbacks in weeks < N pile on. The league rate comes only from seasons
+before the newest one in the table, so a fold never sees the season it scores. Same-game `sacks` is on the leakage
+list. Pre-check (training seasons 2016-2023 only, as CPOE's lesson asked): sack rate correlates −0.48 with carry-over,
+so half of it repeats what carry-over knows, but +0.044 with C4's errors (CPOE was −0.01). Most folds chose heavy
+shrinkage (K=1200).
+The weight is *positive*, +2.3 to +2.6 in five folds: a QB with the same past EPA but a 1-point higher sack rate
+does about +0.025 EPA/dropback better next week than C4 predicts. Reading: sacks already sit inside EPA, and they
+cost a lot of EPA per play, but they repeat less than the rest of a QB's EPA does (offensive line, schedule, game
+script all feed them). So carry-over over-punishes them, and this feature gives part of it back. The gain is biggest
+in weeks 1-4 (+.0005), when last season's sacks dominate carry-over.
+Caveat: the first fold (2019, trained on 2016-2018 only) picked K=50 and a weight near 0, so the signal needs a few
+seasons of data to show. The keep rule passes anyway.

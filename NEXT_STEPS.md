@@ -1,7 +1,7 @@
 # Next steps
 
 ## Where we left off
-Where we left off: Phase 4, Concept 6 (sack rate), with the residual-correlation pre-check run on training seasons only.
+Where we left off: Phase 4, Concept 7 (home/away). C6 sack rate kept (pooled 0.2256).
 
 Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 1 done: league-average baseline (+0.056 for everyone): val MAE 0.240 weighted / 0.270 unweighted.
@@ -27,10 +27,9 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   Carry-over beats it in 6/6 seasons; the current best beats it by 0.0108.
 - Concept 5 done: CPOE (`cpoe_features()`), pooled 0.2260 vs 0.2259, win 35%, 3/6. Dropped: it mostly repeats
   carry-over (corr 0.72), and its weight comes out negative. **Current best still C4, 0.2259.**
-**Next: Concept 6, sack rate** (QB-owned, fast to stabilize; not started). First run the residual-correlation
-pre-check on training seasons only (2016-2023): is sack rate correlated with carry-over's errors, not just
-with carry-over (CPOE's lesson)? Then home/away. Ridge once there are
-enough features for it to matter.
+- Concept 6 done: sack rate (`sack_features()`), pooled 0.2256 vs 0.2259, win 93.2%, 4/6. **Kept: current best.**
+  Weight is positive: carry-over over-punishes sacks, which repeat less than the rest of EPA.
+**Next: Concept 7, home/away**, then the final Phase 4 Ridge fit with all kept features.
 
 Phase 2 summary below.
 

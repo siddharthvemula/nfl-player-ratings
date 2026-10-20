@@ -22,7 +22,7 @@ WEIGHT_COL = "weight"  # dropbacks in the game being predicted
 # Columns describing the game being predicted. They are only known after it is
 # played, so using any of them as a feature would leak the answer. The weight is
 # fine for training and scoring, never as a model input.
-LEAKY_COLUMNS = {TARGET_COL, WEIGHT_COL, "dropbacks", "epa_sum", "epa_per_db", "cpoe_sum", "cpoe_att"}
+LEAKY_COLUMNS = {TARGET_COL, WEIGHT_COL, "dropbacks", "epa_sum", "epa_per_db", "cpoe_sum", "cpoe_att", "sacks"}
 
 # Time-based splits by the target game's season. Later seasons are "live":
 # the site rates them, but they're never used to score the model.

@@ -3,11 +3,12 @@ import polars as pl
 from src.features.qb_games import qb_games
 
 
-def _play(passer_id, epa, qb_dropback=1, posteam="KC", cpoe=0.0):
+def _play(passer_id, epa, qb_dropback=1, posteam="KC", cpoe=0.0, sack=0.0):
     return {
         "season": 2024, "week": 1, "season_type": "REG", "game_id": "2024_01_BAL_KC",
         "posteam": posteam, "defteam": "BAL" if posteam == "KC" else "KC",
         "passer_id": passer_id, "passer": passer_id, "qb_dropback": qb_dropback, "epa": epa, "qb_epa": epa, "cpoe": cpoe,
+        "sack": sack,
     }
 
 
@@ -37,3 +38,13 @@ def test_cpoe_skips_blank_throws():
     ])
     row = qb_games(pbp).row(0, named=True)
     assert row["cpoe_sum"] == 10.0 and row["cpoe_att"] == 2 and row["dropbacks"] == 3
+
+
+def test_sacks():
+    pbp = pl.DataFrame([
+        _play("mahomes", -2.0, sack=1.0),
+        _play("mahomes", 0.5),
+        _play("lamar", 0.1, posteam="BAL"),
+    ])
+    rows = {r["passer_id"]: r for r in qb_games(pbp).to_dicts()}
+    assert rows["mahomes"]["sacks"] == 1 and rows["lamar"]["sacks"] == 0

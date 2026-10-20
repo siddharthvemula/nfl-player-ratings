@@ -151,3 +151,54 @@ def cpoe_features(games: pl.DataFrame, targets: pl.DataFrame, k: float = CPOE_K)
         .with_columns(((pl.col("std_cpoe") + k * start) / (pl.col("std_att") + k)).alias("cpoe_carry"))
         .drop("std_cpoe", "std_att", "last_cpoe", "last_att")
     )
+
+
+# Concept 6: sack rate, built with carry-over's recipe instead of EPA.
+SACK_FEATURES = ["sack_carry"]
+SACK_K = 300  # imaginary league-average dropbacks; default only, walk-forward picks it per fold
+
+
+def league_sack_rate(games: pl.DataFrame, before_season: int) -> float:
+    """Sacks per dropback over every game in seasons before before_season (the shrink target)."""
+    earlier = games.filter(pl.col("season") < before_season)
+    return float(earlier["sacks"].sum() / earlier["dropbacks"].sum())
+
+
+def sack_features(games: pl.DataFrame, targets: pl.DataFrame, k: float = SACK_K) -> pl.DataFrame:
+    """Add each QB's sack rate so far, carried over from last season and shrunk by dropbacks.
+
+    Same two steps as carry_over(), on sacks instead of EPA:
+      start      = (sacks last season + k * league rate) / (dropbacks last season + k)
+      sack_carry = (sacks in weeks < N + k * start) / (dropbacks in weeks < N + k)
+    The league rate comes from seasons before the newest season in targets, so in a
+    walk-forward fold it never sees the season being scored.
+    """
+    check_no_leakage(SACK_FEATURES)
+    league_rate = league_sack_rate(games, targets["season"].max())
+
+    # Step 1: running totals before week N, same season (shift by one game, like base_features).
+    running = (
+        games.sort("season", "week")
+        .with_columns(
+            pl.col("sacks").cum_sum().shift(1).over("passer_id", "season").fill_null(0).alias("std_sacks"),
+            pl.col("dropbacks").cum_sum().shift(1).over("passer_id", "season").fill_null(0).alias("std_db"),
+        )
+        .select("passer_id", "season", "week", "std_sacks", "std_db")
+    )
+
+    # Step 2: full-season totals, relabeled as "last season" for the following year.
+    last = (
+        games.group_by("passer_id", "season")
+        .agg(pl.col("sacks").sum().alias("last_sacks"), pl.col("dropbacks").sum().alias("last_db"))
+        .with_columns(pl.col("season") + 1)
+    )
+
+    # Step 3: last season sets the starting point; this season's dropbacks pile on top of it.
+    start = (pl.col("last_sacks") + k * league_rate) / (pl.col("last_db") + k)
+    return (
+        targets.join(running, on=["passer_id", "season", "week"], how="left")
+        .join(last, on=["passer_id", "season"], how="left")
+        .with_columns(pl.col("std_sacks", "std_db", "last_sacks", "last_db").fill_null(0))
+        .with_columns(((pl.col("std_sacks") + k * start) / (pl.col("std_db") + k)).alias("sack_carry"))
+        .drop("std_sacks", "std_db", "last_sacks", "last_db")
+    )
