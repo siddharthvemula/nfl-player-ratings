@@ -162,3 +162,13 @@ The keep/drop call uses the win % together with whether train agrees; there's no
 **Phase 3 result: carry-over (val 0.231) is the bar to beat.** The whole range from "one number for
 everyone" to the best baseline is only 0.009 of MAE, because single games are noisy. Phase 4 gains will
 be measured in thousandths, which is why the bootstrap matters.
+
+**Phase 4, Concept 1: linear regression on raw ingredients ties carry-over (val 0.2309 vs 0.2312).**
+Features: this-season-so-far EPA/dropback, last season's EPA/dropback, and both dropback counts
+(`base_features()`, weeks < N only; "no data" filled with the train league average because a model
+can't read a blank). Fit with dropback weights so training matches the weighted MAE. Learned weights:
+0.20 on this season and 0.17 on last season, so most of each prediction is pulled toward the average.
+The limit: a linear model gives std_avg the same weight at 3 dropbacks as at 300. It over-trusts tiny
+samples (Hooker, 3 dropbacks at −1.12, predicted −0.24) and under-trusts big ones (Lamar Jackson, 229
+dropbacks at +0.36, predicted +0.15 vs carry-over's +0.21). Carry-over's formula gets that "trust grows with
+sample size" pattern built in. The next features should give the model a way to learn it.

@@ -8,7 +8,10 @@ Phase 3 started in notebooks/02_baseline.ipynb.
 - Concept 4 done: carry-over (K=300, picked on train): val 0.231 / 0.261, best baseline so far (bar to beat).
 - Concept 5 done: bootstrap by QB (`bootstrap_compare()`): shrinkage beats league average in 98% of fake seasons, carry-over beats shrinkage in 90%.
 Phase 3 done. **Bar to beat: carry-over, val weighted MAE 0.231.**
-**Next: Phase 4**, engineered features (no leakage) + Ridge regression, each experiment logged with its bootstrap win %.
+Phase 4 started in notebooks/03_features_ridge.ipynb.
+- Concept 1 done: linear regression on raw ingredients (`base_features()`, `fit_linear()`): val 0.2309, ties carry-over (win 54.5%).
+  Fixed weights can't trust this season more as dropbacks pile up.
+**Next: Concept 2**: features that let the model learn "trust grows with sample size" (e.g. shrunk averages as features), then Ridge.
 
 Phase 2 summary below.
 
