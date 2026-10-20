@@ -15,8 +15,10 @@ Phase 4 started in notebooks/03_features_ridge.ipynb.
   Fixed weight on last season never fades as this season piles up.
 - Hard keep rule added (DECISIONS.md): bootstrap win >= 80% AND train gain in the same direction.
 - Concept 3 done: handoff pieces (`handoff_features()`): val 0.2322, win 13%. Dropped. Reshuffling this/last-season EPA has run out.
-**Next: Concept 4, opponent defense strength** (shrunk by games played, weeks < N only). Then CPOE, sack rate, home/away
-(see DECISIONS.md "Phase 4 feature plan"). Ridge once there are enough features for it to matter.
+- Concept 4 done: opponent defense (`defense_features()`, K=200): val 0.2327, win 20%. Dropped by the rule, though it helps
+  in 6 of 8 held-out train seasons. Follow-up idea: fix carry-over's weight at 1, learn only the defense adjustment.
+**Next: Concept 5, CPOE** (shrunk by attempts, weeks < N only). Then sack rate, home/away (DECISIONS.md "Phase 4 feature plan").
+Ridge once there are enough features for it to matter.
 
 Phase 2 summary below.
 

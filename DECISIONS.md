@@ -211,3 +211,14 @@ Requirements for every new feature, learned from Concepts 1-3:
 - **Only games before week N** (same as all features). Schedule facts known before kickoff (who the
   opponent is, home/away) are allowed; anything measured in the target game is not.
 Each feature is one experiment and one commit, judged by the hard keep rule against the current best.
+
+**Phase 4, Concept 4: opponent defense strength fails the rule on 2024 (val 0.2327 vs 0.2312, win 20%). Dropped.**
+`defense_features()`: EPA/dropback the opponent allowed to every QB in weeks < N of the same season
+(its week N game excluded, since it contains the target game), shrunk toward the league average with
+K=200 (best train MAE in a 50-2000 grid; the curve is flat). Learned: 0.98 x carry-over + 0.50 x def_shrunk
+− 0.048. Train improved by 0.0018, the biggest train gain in Phase 4, but 2024 got worse, so the hard rule says drop.
+Supporting evidence recorded for later: holding out each train season in turn, adding defense beats a
+linear refit of carry-over alone in 6 of 8 seasons (average +0.0016); 2024 (−0.0003) and 2018 (−0.0012)
+are the off years. About 0.0012 of the 2024 loss comes from refitting carry-over itself (0.98 weight +
+intercept), not from the defense term. Not overriding the rule; possible follow-up experiment: keep
+carry-over's weight fixed at 1 and learn only the defense adjustment.
