@@ -63,3 +63,24 @@ def base_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float)
         )
         .drop("std_epa", "last_epa")
     )
+
+
+# Concept 2: the same averages, pre-shrunk so one fixed weight fits every sample size.
+SHRUNK_FEATURES = ["std_shrunk", "last_shrunk"]
+SHRINK_K = 250  # imaginary league-average dropbacks; picked on train in Phase 3, Concept 3
+
+
+def shrunk_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: float, k: float = SHRINK_K) -> pl.DataFrame:
+    """base_features() plus both averages blended toward league_avg with k imaginary dropbacks.
+
+    shrunk = (his EPA + k * league_avg) / (his dropbacks + k)
+    3 dropbacks -> almost league_avg; 600 dropbacks -> mostly his own average.
+    """
+    check_no_leakage(SHRUNK_FEATURES)
+    feats = base_features(games, targets, league_avg)
+    # avg * dropbacks gives back his EPA total (0 when he has no dropbacks, so shrunk = league_avg).
+    shrink = lambda avg, n: (pl.col(avg) * pl.col(n) + k * league_avg) / (pl.col(n) + k)
+    return feats.with_columns(
+        shrink("std_avg", "std_dropbacks").alias("std_shrunk"),
+        shrink("last_avg", "last_dropbacks").alias("last_shrunk"),
+    )

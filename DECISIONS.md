@@ -172,3 +172,12 @@ The limit: a linear model gives std_avg the same weight at 3 dropbacks as at 300
 samples (Hooker, 3 dropbacks at −1.12, predicted −0.24) and under-trusts big ones (Lamar Jackson, 229
 dropbacks at +0.36, predicted +0.15 vs carry-over's +0.21). Carry-over's formula gets that "trust grows with
 sample size" pattern built in. The next features should give the model a way to learn it.
+
+**Phase 4, Concept 2: pre-shrunk features lose to carry-over (val 0.2328 vs 0.2312, win 5%). Dropped.**
+Shrinking each average (K=250) fixed the within-season trust problem: Hooker's 3-dropback −1.12 became
++0.04. But the model learned fixed weights of 0.86 on this season and 0.51 on last season, and last season
+gets 0.51 in week 2 *and* week 17. Carry-over hands off between seasons: last season's pull fades as
+this season's dropbacks pile up. Split by week, the shrunk model wins slightly in weeks 1-4 (−0.001)
+and loses in weeks 5-9 (+0.004) and 10+ (+0.001). Lesson: a linear model can only express a pattern
+that one of its features contains. The next features have to carry the handoff between seasons.
+Note on the bootstrap: there's still no fixed win-% cutoff (see above), but 5% is a clear loss.

@@ -11,7 +11,9 @@ Phase 3 done. **Bar to beat: carry-over, val weighted MAE 0.231.**
 Phase 4 started in notebooks/03_features_ridge.ipynb.
 - Concept 1 done: linear regression on raw ingredients (`base_features()`, `fit_linear()`): val 0.2309, ties carry-over (win 54.5%).
   Fixed weights can't trust this season more as dropbacks pile up.
-**Next: Concept 2**: features that let the model learn "trust grows with sample size" (e.g. shrunk averages as features), then Ridge.
+- Concept 2 done: pre-shrunk features (`shrunk_features()`): val 0.2328, *worse* than carry-over (win 5%). Dropped.
+  Fixed weight on last season never fades as this season piles up.
+**Next: Concept 3**: give the model the handoff between seasons (e.g. carry-over's own prediction as a feature, or season-share features), then Ridge.
 
 Phase 2 summary below.
 

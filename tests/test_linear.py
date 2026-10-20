@@ -40,3 +40,19 @@ def test_fit_linear_refuses_leaky_features():
     df = pl.DataFrame({"target": [0.1, 0.2], "weight": [10, 20]})
     with pytest.raises(ValueError, match="Leakage"):
         fit_linear(df, ["target"])
+
+
+def test_shrunk_features_blend_toward_league_average():
+    from src.features.history import shrunk_features
+    from src.features.target import build_targets
+
+    games = pl.DataFrame([
+        _game("qb", 1, 500, 100.0, season=2023),  # +0.2 last season
+        _game("qb", 1, 50, -10.0),                # -0.2
+        _game("qb", 2, 20, 10.0),
+    ]).with_columns(pl.col("dropbacks").cast(pl.UInt32))
+    f = shrunk_features(games, build_targets(games), league_avg=0.05, k=250).sort("season", "week")
+    wk1, wk2 = f.filter(pl.col("season") == 2024).iter_rows(named=True)
+    assert abs(wk1["std_shrunk"] - 0.05) < 1e-9                                # no games yet: league average
+    assert abs(wk2["std_shrunk"] - (-10.0 + 250 * 0.05) / (50 + 250)) < 1e-9
+    assert abs(wk2["last_shrunk"] - (100.0 + 250 * 0.05) / (500 + 250)) < 1e-9
