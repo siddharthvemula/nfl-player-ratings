@@ -59,6 +59,7 @@ Frontend redesign (approved 2026-10-20), one commit per page:
 - [x] Model Lab calibration plot (2025, 10 equal-count bins; `calibration_bins()` in evaluate.py; top group forecast +0.227, actual +0.175, below the diagonal as Sid predicted).
 - [x] `gh auth login` done; About link was already set; weekly workflow run by hand 2026-10-20: tests, rebuild, commit (af22c59) and Vercel redeploy all worked.
 - [x] Build output now has a stable order (ties in rating broken by passer_id); GitHub Actions bumped to Node-24 versions (checkout v7, setup-python v7, setup-node v7, cache v6).
+- [x] Weekly run crashed on a null `passer_id` (2026 wk 7 data): fixed in `qb_games()`, see DECISIONS.md "Null passer_id plays" (2026-10-27).
 - [ ] Sid: enable Web Analytics in the Vercel project (Analytics tab).
 
 Phase 2 summary below.

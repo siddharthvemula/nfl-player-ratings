@@ -21,9 +21,12 @@ def defense_features(games: pl.DataFrame, targets: pl.DataFrame, league_avg: flo
     """
     check_no_leakage(DEFENSE_FEATURES)
 
-    # Step 1: one row per defense per game, adding up every QB it faced that week.
+    # Step 1: one row per defense per game, adding up every QB it faced that week. Dropbacks with no
+    # passer_id never become QB rows, but the defense still faced them: they ride in def_extra_*.
+    extra_epa = pl.col("def_extra_epa").sum() if "def_extra_epa" in games.columns else pl.lit(0.0)
+    extra_db = pl.col("def_extra_dropbacks").sum() if "def_extra_dropbacks" in games.columns else pl.lit(0)
     per_game = games.group_by("defteam", "season", "week").agg(
-        pl.col("epa_sum").sum().alias("def_epa"), pl.col("dropbacks").sum().alias("def_dropbacks")
+        (pl.col("epa_sum").sum() + extra_epa).alias("def_epa"), (pl.col("dropbacks").sum() + extra_db).alias("def_dropbacks")
     )
 
     # Step 2: running totals that stop just before week N (shift by one game, like base_features).

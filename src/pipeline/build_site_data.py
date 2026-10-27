@@ -100,6 +100,9 @@ def next_game_placeholders(games: pl.DataFrame, schedule: pl.DataFrame, live_sea
             pl.lit(0.0).alias("cpoe_sum"),
             pl.lit(0, dtype=pl.UInt32).alias("cpoe_att"),
             pl.lit(0.0).alias("sacks"),
+            pl.lit(0.0).alias("def_extra_epa"),
+            pl.lit(0, dtype=pl.UInt32).alias("def_extra_dropbacks"),
+            pl.lit(0.0).alias("def_extra_sacks"),
         )
         .select(games.columns)
         .cast({c: games.schema[c] for c in games.columns})

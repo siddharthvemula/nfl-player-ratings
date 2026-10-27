@@ -18,9 +18,26 @@ def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
     charge the QB for a receiver's fumble after the catch (Concept 5). The
     notebook passes "epa" to reproduce the Phase 2 exploration.
     """
-    return (
-        # Step 1: keep only dropbacks (pass attempts, sacks, scrambles).
-        pbp.filter(pl.col("qb_dropback") == 1)
+    # Step 1: keep only dropbacks (pass attempts, sacks, scrambles).
+    dropbacks = pbp.filter(pl.col("qb_dropback") == 1)
+
+    # Some dropbacks have no passer_id (nflverse hasn't tagged the passer yet). Grouped, they'd become
+    # a fake "None" QB who then breaks sorting downstream, so they never become QB rows. Say how many per season.
+    no_passer = dropbacks.filter(pl.col("passer_id").is_null())
+    if no_passer.height:
+        per_season = no_passer.group_by("season").len().sort("season")
+        counts = ", ".join(f"{s}: {n}" for s, n in per_season.iter_rows())
+        print(f"qb_games: dropped {no_passer.height} dropbacks with null passer_id ({counts})")
+    # They still happened, so the defense that faced them keeps the credit (DECISIONS.md). Totals per
+    # team-game ride along on one QB row of that game, in def_extra_* columns that only opponent.py and league_sack_rate read.
+    extra = no_passer.group_by(GAME_KEYS).agg(
+        pl.col(epa_col).sum().alias("def_extra_epa"),
+        pl.len().cast(pl.UInt32).alias("def_extra_dropbacks"),
+        pl.col("sack").fill_null(0).sum().alias("def_extra_sacks"),
+    )
+
+    qb_rows = (
+        dropbacks.filter(pl.col("passer_id").is_not_null())
         # Step 2: sort the "receipts" into piles, one pile per passer per game.
         # passer_id (not passer_player_id) because only passer_id is filled in
         # on scrambles; see Concept 4 in notebooks/01_explore.ipynb.
@@ -46,4 +63,13 @@ def qb_games(pbp: pl.DataFrame, epa_col: str = "qb_epa") -> pl.DataFrame:
             .otherwise(-1).first().alias("home"),
         )
         .sort(["season", "week", "game_id", "posteam", "dropbacks"], descending=[False, False, False, False, True])
+    )
+    # Hand the extra totals to the first QB row of each team-game (0 on the others, so nothing double counts).
+    return (
+        qb_rows.join(extra, on=GAME_KEYS, how="left")
+        .with_columns(
+            pl.when(pl.int_range(pl.len()).over(GAME_KEYS) == 0).then(pl.col("def_extra_epa")).otherwise(None).fill_null(0.0).alias("def_extra_epa"),
+            pl.when(pl.int_range(pl.len()).over(GAME_KEYS) == 0).then(pl.col("def_extra_dropbacks")).otherwise(None).fill_null(0).cast(pl.UInt32).alias("def_extra_dropbacks"),
+            pl.when(pl.int_range(pl.len()).over(GAME_KEYS) == 0).then(pl.col("def_extra_sacks")).otherwise(None).fill_null(0.0).alias("def_extra_sacks"),
+        )
     )

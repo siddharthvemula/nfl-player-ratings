@@ -161,7 +161,11 @@ SACK_K = 300  # imaginary league-average dropbacks; default only, walk-forward p
 def league_sack_rate(games: pl.DataFrame, before_season: int) -> float:
     """Sacks per dropback over every game in seasons before before_season (the shrink target)."""
     earlier = games.filter(pl.col("season") < before_season)
-    return float(earlier["sacks"].sum() / earlier["dropbacks"].sum())
+    sacks, dropbacks = earlier["sacks"].sum(), earlier["dropbacks"].sum()
+    # Dropbacks with no passer_id are still league dropbacks (qb_games.py keeps their totals in def_extra_*).
+    if "def_extra_sacks" in earlier.columns:
+        sacks, dropbacks = sacks + earlier["def_extra_sacks"].sum(), dropbacks + earlier["def_extra_dropbacks"].sum()
+    return float(sacks / dropbacks)
 
 
 def sack_features(games: pl.DataFrame, targets: pl.DataFrame, k: float = SACK_K) -> pl.DataFrame:

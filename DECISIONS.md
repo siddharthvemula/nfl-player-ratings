@@ -509,3 +509,14 @@ Follow-up, same day: the second manual run still committed, because my Mac and G
 of the fitted weights (0.00934980094903286 vs ...2767), which flipped near-tied QBs (Blough/Lock, 2019 wk 13). Ranks now use the
 rating rounded to 8 places (ties by passer_id), and the saved model constants are rounded to 12 significant digits
 (`_stable()`), so the same fit gives the same JSON on any machine. No rating or score changes (they were already rounded to 4 places).
+
+**Null passer_id plays (2026-10-27).** The weekly run crashed (`TypeError: '<' not supported between NoneType and str` in
+`build_site_data.py`) because the 2026 data had a dropback with `passer_id = None` (nflverse hadn't tagged the passer), which
+`qb_games()` grouped into a fake "None" QB. The same thing happens a few times every season from 2019 (1-3 plays), but only the
+2026 one survived the filters and reached the output. Decision: **null-passer plays count for the defense and the league, but never
+become QB rows.** `qb_games()` drops them before grouping and prints how many per season (so we notice if it grows). Their
+totals (EPA, dropbacks, sacks) ride along on one QB row of that team-game in `def_extra_*` columns, which only
+`defense_features()` (EPA the defense allowed) and `league_sack_rate()` read. Why not just drop them everywhere: they were real
+plays the defense faced, and removing them moved 105 of 4,306 past ratings by up to 0.0001 (and the league sack rate). Keeping
+them leaves 2016-2025 ratings byte-identical to the committed version and the 2025 test score at 0.2382, so no experiment is
+affected. The `def_extra_*` columns are in `LEAKY_COLUMNS` (same-game stats, never features). Tests: `tests/test_qb_games.py`.
